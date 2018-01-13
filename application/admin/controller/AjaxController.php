@@ -18,6 +18,7 @@ use app\admin\model\Course;
 use app\admin\model\Subject;
 use app\admin\model\Schedule;
 use app\admin\model\Student;
+use app\admin\model\Salary;
 use think\Db;
 
 /**
@@ -173,6 +174,18 @@ class AjaxController extends CommonController {
         $this->assign("campusid", $campusid);
         return $this->fetch('teacher/manage');
     }
+
+    /**
+     * 薪资模板管理
+     * @return mixed
+     */
+    public function salary_template() {
+        $campusid = session("loginSession")['campusid'];
+        //$this->setPersonalSettings(["teachergridsize"]);
+        $this->assign("campusid", $campusid);
+        return $this->fetch('salary/manage');
+    }
+
 
     /**
      * 师生消息

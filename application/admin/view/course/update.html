@@ -52,7 +52,7 @@
             <div class="col-sm-5">
                 <select name="course_grade_id" id="select_gradeid" class="form-control" style="height:35px;">
                     {volist name='grades' id='grade'}
-                      <option value="{$grade.id}" {if $grade.grade_name==$course.course_grade_id} selected {/if}>{$grade.grade_name}</option>
+                      <option value="{$grade.id}" {if $grade.id==$course.course_grade_id} selected {/if}>{$grade.grade_name}</option>
                     {/volist}
                 </select>
             </div>
