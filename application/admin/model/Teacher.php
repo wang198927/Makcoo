@@ -27,5 +27,9 @@ class Teacher extends Model
     {
         return $this->belongsTo('Subject','teacher_subject_id');
     }
+    public function salarytemp()
+    {
+        return $this->belongsTo('Salarytemp','teacher_salarytemp_id');
+    }
 
 }
