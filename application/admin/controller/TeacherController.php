@@ -7,6 +7,7 @@ use app\admin\model\Grade;
 use app\admin\model\Teacher;
 use app\admin\validate\TeacherValidate;
 use app\admin\model\Campus;
+use app\admin\model\salarytemp;
 use think\Db;
 
 /**
@@ -110,8 +111,8 @@ class TeacherController extends CommonController {
             $searchPath['teacher.campusid'] = $searchPath["campusid"];
             unset($searchPath["campusid"]);
         }
-        $students = Teacher::with("grade,subject")->where($searchPath)->order("teacher.id desc")->limit($rows * ($page - 1), $rows)->select();
-        $total = Teacher::with("grade,subject")->where($searchPath)->count();
+        $students = Teacher::with("grade,subject,salarytemp")->where($searchPath)->order("teacher.id desc")->limit($rows * ($page - 1), $rows)->select();
+        $total = Teacher::with("grade,subject,salarytemp")->where($searchPath)->count();
         $data['total'] = $total;
         $data['rows'] = $students;
         return json_encode($data);

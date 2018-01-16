@@ -6,8 +6,8 @@ use think\Validate;
 
 /**
  * Created by PhpStorm.
- * User: niuniu
- * Date: 2016/8/17
+ * User: wangdm
+ * Date: 2018/1/13
  * Time: 10:49
  */
 class SalaryTempValidate extends Validate

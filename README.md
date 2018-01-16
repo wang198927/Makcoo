@@ -1,6 +1,7 @@
-# EduWork
-### EduWork开发小组
-ghostsf / gete / peter / RadinMap
+# Makcoo Edu Management System
+# wangdm
+#based EduWork
+
 ===============
 
 ThinkPHP 5.0 RC4

@@ -203,6 +203,15 @@ $(function() {
                     width: cellwidth,
                     sortable: true,
                 }, {
+                    field: 'salarytemp',
+                    title: '薪资模板',
+                    align: 'center',
+                    width: cellwidth,
+                    sortable: true,
+                    formatter: function(salarytemp) {
+                        return salarytemp.salarytemp_name;
+                },
+                },{
                     field: 'teacher_joindate',
                     title: '入职日期',
                     align: 'center',

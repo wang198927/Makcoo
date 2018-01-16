@@ -22,7 +22,7 @@ function getSearchParams(params) {
  * 页面自加载
  */
 $(function () {
-    var cellwidth = ($(".box-content.table-responsive").width() - 55) / 11;
+    var cellwidth = ($(".box-content.table-responsive").width() - 55) / 8;
     var psval = $('#datatable_salarytempinfo').attr('data-size');
     if (psval == undefined || psval == "") {
         psval = 10;

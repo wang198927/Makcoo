@@ -186,6 +186,17 @@ class AjaxController extends CommonController {
         return $this->fetch('salary/manage');
     }
 
+    /**
+     * 薪资模板管理
+     * @return mixed
+     */
+    public function salary_cal() {
+        $campusid = session("loginSession")['campusid'];
+        //$this->setPersonalSettings(["teachergridsize"]);
+        $this->assign("campusid", $campusid);
+        return $this->fetch('salary/calculate');
+    }
+
 
     /**
      * 师生消息

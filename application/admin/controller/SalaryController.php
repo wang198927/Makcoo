@@ -11,8 +11,9 @@ use app\admin\model\Grade;
 use app\admin\model\Subject;
 use app\admin\model\Campus;
 use app\admin\model\Salarytemp;
+use app\admin\model\Teacher;
 use think\Controller;
-use app\admin\validate\CourseValidate;
+use app\admin\validate\SalaryTempValidate;
 use think\Db;
 
 
@@ -23,24 +24,31 @@ use think\Db;
  */
 class SalaryController extends CommonController
 {
+
     /**
-     *ajax获得课程信息
+     * 获得薪资计算结果json数据
      */
-    public function getCourseJSON()
-    {	
-		if($this->redis()){
-            if($this->redis->EXISTS('DgetCourseJSON'))
-               return $this->redis->get("DgetCourseJSON");
-
-        }
-		$campusid = session("loginSession")['campusid'];
-        $list = Db::name('course')->where(["campusid"=>$campusid])->select();
-		if($this->redis()) {
-            $this->redis->set("DgetCourseJSON",json_encode($list));
-
-        }
-        return json_encode($list);
+    public function getSalaryInfo()
+    {
+        $rows = $_POST['rows'];
+        $page = $_POST['page'];
+        $path = $this->getDataByCampusid($_POST);
+        /*        $searchPath = $this->searchNotLike($path,$_POST,'course_grade_id','course_subject_id');
+                if(isset($searchPath['campusid'])){
+                    $searchPath['course.campusid'] = $searchPath["campusid"];
+                    unset($searchPath["campusid"]);
+                }*/
+        $salaryinfos = Teacher::with("salarytemp")->limit($rows * ($page - 1), $rows)->select();
+        $temp1 = $salaryinfos[0]['teacher_name'];
+        $temp2 = $salaryinfos[0]['salarytemp']['salarytemp_name'];
+        $total = Teacher::where($path)->count();
+        $data['total'] = $total;
+        $data['rows'] = $salaryinfos;
+        return json_encode($data);
     }
+
+
+
 
     /**
      * 获得薪资模板json数据
@@ -77,17 +85,17 @@ class SalaryController extends CommonController
         $_POST['campusid'] = session('loginSession')['campusid'];
 
         $registrationModel = M("Salarytemp");
-/*        $validata = new CourseValidate();
+        $validata = new SalaryTempValidate();
         if (!$validata->check($_POST)) {
             $returnData['status'] = 0;
             $returnData['msg'] = $validata->getError();
             return json_encode($returnData);
-        } else {*/
+        } else {
             $registrationModel->insert($_POST);
             $returnData['status'] = 1;
             $returnData['msg'] = "成功";
             return json_encode($returnData);
-        //}
+        }
     }
     /**
      * 显示修改页
@@ -106,19 +114,19 @@ class SalaryController extends CommonController
     public function update()
     {
         $registrationModel = M("Salarytemp");
-  /*      $validata = new CourseValidate();
+        $validata = new SalaryTempValidate();
         if (!$validata->check($_POST)) {
             $returnData['status'] = 0;
             $returnData['msg'] = $validata->getError();
             return json_encode($returnData);
-        } else {*/
+        } else {
             //$_POST['course_total'] = $_POST['course_unitprice']*$_POST['course_periodnum'];
             $registrationModel->update($_POST);
             $returnData['status'] = 1;
             $returnData['msg'] = "修改成功";
             return json_encode($returnData);
         }
-    //}
+    }
     /**
      * 删除
      */
