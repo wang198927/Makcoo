@@ -32,4 +32,9 @@ class Teacher extends Model
         return $this->belongsTo('Salarytemp','teacher_salarytemp_id');
     }
 
+    public function classrecords()
+    {
+        return $this->hasMany('Classrecords');
+    }
+
 }

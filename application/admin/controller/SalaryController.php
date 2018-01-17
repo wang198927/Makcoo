@@ -38,10 +38,36 @@ class SalaryController extends CommonController
                     $searchPath['course.campusid'] = $searchPath["campusid"];
                     unset($searchPath["campusid"]);
                 }*/
-        $salaryinfos = Teacher::with("salarytemp")->limit($rows * ($page - 1), $rows)->select();
-        $temp1 = $salaryinfos[0]['teacher_name'];
-        $temp2 = $salaryinfos[0]['salarytemp']['salarytemp_name'];
-        $total = Teacher::where($path)->count();
+        $salaryinfos = Db::query('select a.id ,a.teacher_name,sum(c.records_classhour) as classhour,d.salarytemp_name,d.salarytemp_newbonus,d.salarytemp_demobonus from ew_teacher a 
+left join ew_classrecords c on a.id = c.records_teacherid
+left join ew_salarytemp d on a.teacher_salarytemp_id = d.id
+group by a.id');
+        $salesinfos = Db::query('select a.id ,c.sales_ordertypename,sum(c.sales_money) as money from ew_teacher a 
+left join ew_salesrecord c on a.id = c.sales_teacherid
+group by a.id,c.sales_ordertypename');
+          for ($i=0;$i<sizeof($salaryinfos);$i++)
+          {
+              for ($j=0;$j<sizeof($salesinfos);$j++)
+              {
+                  if($salaryinfos[$i]['id'] ==$salesinfos[$j]['id'] )
+                  {
+                      $tempordertype = $salesinfos[$j]['sales_ordertypename'];
+                      $salaryinfos[$i][$tempordertype]=$salesinfos[$j]['money'];
+                      if($tempordertype=='新单')
+                      {
+                          $salaryinfos[$i][$tempordertype]=$salaryinfos[$i][$tempordertype]*$salaryinfos[$i]['salarytemp_newbonus']/100;
+                      }
+                      elseif ($tempordertype=='demo课')
+                      {
+                          $salaryinfos[$i][$tempordertype]=$salaryinfos[$i][$tempordertype]*$salaryinfos[$i]['salarytemp_demobonus']/100;
+                      }
+                  }
+              }
+          }
+//        $temp1 = $salaryinfos[0]['teacher_name'];
+//        $temp2 = $salaryinfos[0]['salarytemp']['salarytemp_name'];
+        $total = sizeof($salaryinfos);
+
         $data['total'] = $total;
         $data['rows'] = $salaryinfos;
         return json_encode($data);
