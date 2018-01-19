@@ -38,31 +38,19 @@ class SalaryController extends CommonController
                     $searchPath['course.campusid'] = $searchPath["campusid"];
                     unset($searchPath["campusid"]);
                 }*/
-        unset($_POST['name']);
+        //todo 根据员工姓名指定查询还没做，后期再考虑
+        $teacherDb = new Teacher;
         //查每个员工基本工资
-        $salaryinfos = Db::query('select a.id as teacher_id,a.teacher_name,d.* from ew_teacher a 
-left join ew_salarytemp d on a.teacher_salarytemp_id = d.id
-group by a.id
-order by a.id
-limit :offset,:row',['offset'=>$rows * ($page - 1),'row'=>$rows]);
+        $salaryinfos =$teacherDb->queryTeacherBaseSalary($rows,$page);
         //获取总行数
-        $totalrows=sizeof(Db::query('select a.id as teacher_id,a.teacher_name,d.* from ew_teacher a 
-left join ew_salarytemp d on a.teacher_salarytemp_id = d.id
-group by a.id
-order by a.id'));
+        $totalrows=sizeof($teacherDb->queryTeacherBaseSalaryNoLimit());
 
         //查每个员工课时数
-        $classsalaryinfos = Db::query('select a.id as teacher_id,a.teacher_name,sum(c.records_classhour) as classhour from ew_teacher a 
-left join ew_classrecords c on a.id = c.records_teacherid
-where c.records_endtime between :starttime and :endtime
-group by a.id
-order by a.id',['starttime'=>$_POST['starttime'],'endtime'=>$_POST['endtime']]);
+        $classsalaryinfos = $teacherDb->queryTeacherClassHour($_POST['starttime'],$_POST['endtime']);
 
         //查每个员工各类销售额
-        $salesinfos = Db::query('select a.id ,c.sales_ordertypename,sum(c.sales_money*0.1) as money from ew_teacher a 
-left join ew_salesrecord c on a.id = c.sales_teacherid
-where c.sales_day between :starttime and :endtime
-group by a.id,c.sales_ordertypename',['starttime'=>$_POST['starttime'],'endtime'=>$_POST['endtime']]);
+        $salesinfos = $teacherDb->queryTeacherSalesMoney($_POST['starttime'],$_POST['endtime']);
+
 
           for ($i=0;$i<sizeof($salaryinfos);$i++)
           {
@@ -205,6 +193,55 @@ group by a.id,c.sales_ordertypename',['starttime'=>$_POST['starttime'],'endtime'
         } else {
             return json_encode(array("status" => 0, "msg" => "删除失败！"));
         }
+    }
+
+    /*
+ * 导出薪资excel表格
+ */
+    public function export()
+    {
+        $campusid = session('loginSession')['campusid'];
+        $campus = Campus::get($campusid);
+        $xlsName = $campus->campus_name . "校区老师薪资汇总表";
+        $xlsCell = array(
+            array("teacher_name","姓名"),
+            array("teacher_gender","性别"),
+            array("teacher_idcard","身份证"),
+            array("teacher_bankaccount","银行卡号"),
+            array("teacher_jobtype","在职类型"),
+            array("grade_name","年级"),
+            array("subject_name","科目"),
+            array("teacher_telphone","电话"),
+            array("teacher_email","邮箱"),
+            array("teacher_qq","qq"),
+            array("teacher_joindate","入职日期"),
+            array("teacher_befulldate","转正日期"),
+            array("teacher_status","是否在职"),
+            array("teacher_remark","备注")
+        );
+        $join = [
+            ["ew_grade grade","teacher.teacher_grade_id = grade.id"],
+            ["ew_subject subject","teacher.teacher_subject_id = subject.id" ]
+        ];
+        $xlsData = Db::table('ew_teacher')->alias('teacher')->join($join)->order('teacher_joindate asc')->select();
+        for ($i = 0; $i < count($xlsData); $i++) {
+            if ($xlsData[$i]['teacher_gender'] == 0) {
+                $xlsData[$i]['teacher_gender'] = "男";
+            } else {
+                $xlsData[$i]['teacher_gender'] = "女";
+            }
+            if ($xlsData[$i]['teacher_jobtype'] == 0) {
+                $xlsData[$i]['teacher_jobtype'] = "兼职";
+            } else {
+                $xlsData[$i]['teacher_jobtype'] = "全职";
+            }
+            if($xlsData[$i]['teacher_status']==0){
+                $xlsData[$i]['teacher_status'] = "离职";
+            }else{
+                $xlsData[$i]['teacher_status'] = "在职";
+            }
+        }
+        $this->exportExcel($xlsName, $xlsCell, $xlsData);
     }
 
 }

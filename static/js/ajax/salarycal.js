@@ -145,6 +145,12 @@ $(function () {
         $('#datatable_salaryinfo').datagrid('load');
     })*/
 
+    // 给上传按钮增加上传动作
+    $("#export").click(function()
+    {
+        window.location.href = "admin/salary/export";
+    });
+
 
 
 
