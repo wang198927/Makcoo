@@ -148,7 +148,16 @@ $(function () {
     // 给上传按钮增加上传动作
     $("#export").click(function()
     {
-        window.location.href = "admin/salary/export";
+        var searchParams = getSearchParams();
+        //必须选择薪资计算起始、终止时间
+        if(searchParams['starttime']==undefined||searchParams['starttime']==''||searchParams['endtime']==undefined||searchParams['endtime']==''){
+            $.TeachDialog({
+                content: '请选择起始日期和终止日期',
+
+            });
+            return;
+        }
+        window.location.href = "admin/salary/export?starttime="+searchParams['starttime']+"&endtime="+searchParams['endtime'];
     });
 
 

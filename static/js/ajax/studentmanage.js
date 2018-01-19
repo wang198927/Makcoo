@@ -476,31 +476,6 @@ $(function() {
     $("#export").click(function()
     {
 
-            // $.ajax({
-            //     url: 'admin/student/export',
-            //     data: "" ,
-            //     type: 'POST',
-            //     // success: function(data) {
-            //     //     if("1"==data){
-            //     //         $.TeachDialog({
-            //     //         content: '导入成功',
-            //     //     });
-            //     //     }
-            //     //     else{
-            //     //         $.TeachDialog({
-            //     //         content: data,
-            //     //     });
-            //     //     }
-
-            //     // },
-            //     // error: function() {
-            //     //     $.TeachDialog({
-            //     //         content: '请求失败',
-            //     //     });
-            //     //     return;
-            //     // }
-            //     async: false
-            // });
             window.location.href = "admin/student/export";
     });
 

@@ -51,48 +51,11 @@ class SalaryController extends CommonController
         //查每个员工各类销售额
         $salesinfos = $teacherDb->queryTeacherSalesMoney($_POST['starttime'],$_POST['endtime']);
 
+        //将基本工资模板，课时费，销售提成组包
+        $salaryinfos = $this->sumSalary($salaryinfos,$classsalaryinfos,$salesinfos);
 
-          for ($i=0;$i<sizeof($salaryinfos);$i++)
-          {
-              $salaryinfos[$i]['classhour_money']=0;
-              //计算课时费
-              for($k=0;$k<sizeof($classsalaryinfos);$k++)
-              {
-                  //遍历找到课时查询结果中该员工的课时数，计算课时费
-                  if($salaryinfos[$i]['teacher_id'] ==$classsalaryinfos[$k]['teacher_id'] )
-                  {
-                      $salaryinfos[$i]['classhour_money']=$classsalaryinfos[$k]['classhour']*$salaryinfos[$i]['salarytemp_classhour'];
-                  }
-              }
-              $salaryinfos[$i]['新单']=0;
-              $salaryinfos[$i]['demo课']=0;
-              //计算不包含销售提成的总工资
-              $salaryinfos[$i]['total']=$salaryinfos[$i]['salarytemp_base']+$salaryinfos[$i]['salarytemp_pos']+$salaryinfos[$i]['salarytemp_com']+$salaryinfos[$i]['salarytemp_trans']+
-              $salaryinfos[$i]['salarytemp_food']+$salaryinfos[$i]['classhour_money'];
-              //循环每个员工计算各类销售提成
-              for ($j=0;$j<sizeof($salesinfos);$j++)
-              {
-                  if($salaryinfos[$i]['teacher_id'] ==$salesinfos[$j]['id'] )
-                  {
-                      $tempordertype = $salesinfos[$j]['sales_ordertypename'];
-                      $salaryinfos[$i][$tempordertype]=$salesinfos[$j]['money'];
-                      if($tempordertype=='新单')
-                      {
-                          $salaryinfos[$i][$tempordertype]=$salaryinfos[$i][$tempordertype]*$salaryinfos[$i]['salarytemp_newbonus']/100;  //提成比例需要换成%
-                          $salaryinfos[$i]['total']=$salaryinfos[$i]['total']+$salaryinfos[$i][$tempordertype];
-                      }
-                      elseif ($tempordertype=='demo课')
-                      {
-                          $salaryinfos[$i][$tempordertype]=$salaryinfos[$i][$tempordertype]*$salaryinfos[$i]['salarytemp_demobonus']/100;
-                          $salaryinfos[$i]['total']=$salaryinfos[$i]['total']+$salaryinfos[$i][$tempordertype];
-                      }
-                      else
-                      {
-                          //todo 其他销售类统计
-                      }
-                  }
-              }
-          }
+
+
 //        $temp1 = $salaryinfos[0]['teacher_name'];
 //        $temp2 = $salaryinfos[0]['salarytemp']['salarytemp_name'];
 
@@ -195,6 +158,54 @@ class SalaryController extends CommonController
         }
     }
 
+    /*
+    * 组合员工基本工资、课时费、销售提成
+    */
+    public function sumSalary($salaryinfos=[],$classsalaryinfos=[],$salesinfos=[])
+    {
+        for ($i=0;$i<sizeof($salaryinfos);$i++)
+        {
+            $salaryinfos[$i]['classhour_money']=0;
+            //计算课时费
+            for($k=0;$k<sizeof($classsalaryinfos);$k++)
+            {
+                //遍历找到课时查询结果中该员工的课时数，计算课时费
+                if($salaryinfos[$i]['teacher_id'] ==$classsalaryinfos[$k]['teacher_id'] )
+                {
+                    $salaryinfos[$i]['classhour_money']=$classsalaryinfos[$k]['classhour']*$salaryinfos[$i]['salarytemp_classhour'];
+                }
+            }
+            $salaryinfos[$i]['新单']=0;
+            $salaryinfos[$i]['demo课']=0;
+            //计算不包含销售提成的总工资
+            $salaryinfos[$i]['total']=$salaryinfos[$i]['salarytemp_base']+$salaryinfos[$i]['salarytemp_pos']+$salaryinfos[$i]['salarytemp_com']+$salaryinfos[$i]['salarytemp_trans']+
+                $salaryinfos[$i]['salarytemp_food']+$salaryinfos[$i]['classhour_money'];
+            //循环每个员工计算各类销售提成
+            for ($j=0;$j<sizeof($salesinfos);$j++)
+            {
+                if($salaryinfos[$i]['teacher_id'] ==$salesinfos[$j]['id'] )
+                {
+                    $tempordertype = $salesinfos[$j]['sales_ordertypename'];
+                    $salaryinfos[$i][$tempordertype]=$salesinfos[$j]['money'];
+                    if($tempordertype=='新单')
+                    {
+                        $salaryinfos[$i][$tempordertype]=$salaryinfos[$i][$tempordertype]*$salaryinfos[$i]['salarytemp_newbonus']/100;  //提成比例需要换成%
+                        $salaryinfos[$i]['total']=$salaryinfos[$i]['total']+$salaryinfos[$i][$tempordertype];
+                    }
+                    elseif ($tempordertype=='demo课')
+                    {
+                        $salaryinfos[$i][$tempordertype]=$salaryinfos[$i][$tempordertype]*$salaryinfos[$i]['salarytemp_demobonus']/100;
+                        $salaryinfos[$i]['total']=$salaryinfos[$i]['total']+$salaryinfos[$i][$tempordertype];
+                    }
+                    else
+                    {
+                        //todo 其他销售类统计
+                    }
+                }
+            }
+        }
+        return $salaryinfos;
+    }
     /*
  * 导出薪资excel表格
  */
