@@ -211,47 +211,48 @@ class SalaryController extends CommonController
  */
     public function export()
     {
+        $starttime = $_GET['starttime'];
+        $endtime = $_GET['endtime'];
         $campusid = session('loginSession')['campusid'];
         $campus = Campus::get($campusid);
-        $xlsName = $campus->campus_name . "校区老师薪资汇总表";
+        $xlsName = $campus->campus_name . "老师薪资汇总表(".str_replace('-','',$starttime)."-".str_replace('-','',$endtime).")";
         $xlsCell = array(
             array("teacher_name","姓名"),
-            array("teacher_gender","性别"),
-            array("teacher_idcard","身份证"),
-            array("teacher_bankaccount","银行卡号"),
-            array("teacher_jobtype","在职类型"),
-            array("grade_name","年级"),
-            array("subject_name","科目"),
-            array("teacher_telphone","电话"),
-            array("teacher_email","邮箱"),
-            array("teacher_qq","qq"),
-            array("teacher_joindate","入职日期"),
-            array("teacher_befulldate","转正日期"),
-            array("teacher_status","是否在职"),
-            array("teacher_remark","备注")
+            array("total","合计"),
+            array("salarytemp_base","基本工资"),
+            array("salarytemp_pos","岗位工资"),
+            array("salarytemp_com","通讯补贴"),
+            array("salarytemp_trans","交通补贴"),
+            array("salarytemp_food","餐补"),
+            array("salarytemp_classhour","课时费"),
+            array("新单","新单提成"),
+            array("demo课","demo课提成"),
         );
-        $join = [
-            ["ew_grade grade","teacher.teacher_grade_id = grade.id"],
-            ["ew_subject subject","teacher.teacher_subject_id = subject.id" ]
-        ];
-        $xlsData = Db::table('ew_teacher')->alias('teacher')->join($join)->order('teacher_joindate asc')->select();
-        for ($i = 0; $i < count($xlsData); $i++) {
-            if ($xlsData[$i]['teacher_gender'] == 0) {
-                $xlsData[$i]['teacher_gender'] = "男";
-            } else {
-                $xlsData[$i]['teacher_gender'] = "女";
-            }
-            if ($xlsData[$i]['teacher_jobtype'] == 0) {
-                $xlsData[$i]['teacher_jobtype'] = "兼职";
-            } else {
-                $xlsData[$i]['teacher_jobtype'] = "全职";
-            }
-            if($xlsData[$i]['teacher_status']==0){
-                $xlsData[$i]['teacher_status'] = "离职";
-            }else{
-                $xlsData[$i]['teacher_status'] = "在职";
-            }
-        }
+
+        $path = $this->getDataByCampusid($_POST);
+        /*                $searchPath = $this->searchNotLike($path,$_POST,'teacher_name','starttime','endtime');
+                        if(isset($searchPath['campusid'])){
+                            $searchPath['course.campusid'] = $searchPath["campusid"];
+                            unset($searchPath["campusid"]);
+                        }*/
+        //todo 根据员工姓名指定查询还没做，后期再考虑
+        $teacherDb = new Teacher;
+        //查每个员工基本工资
+        //$salaryinfos =$teacherDb->queryTeacherBaseSalary($rows,$page);
+        //获取总行数
+        $salaryinfos=$teacherDb->queryTeacherBaseSalaryNoLimit();
+
+        //查每个员工课时数
+        $classsalaryinfos = $teacherDb->queryTeacherClassHour($starttime,$endtime);
+
+        //查每个员工各类销售额
+        $salesinfos = $teacherDb->queryTeacherSalesMoney($starttime,$endtime);
+
+        //将基本工资模板，课时费，销售提成组包
+        $salaryinfos = $this->sumSalary($salaryinfos,$classsalaryinfos,$salesinfos);
+
+        $xlsData=$salaryinfos;
+
         $this->exportExcel($xlsName, $xlsCell, $xlsData);
     }
 

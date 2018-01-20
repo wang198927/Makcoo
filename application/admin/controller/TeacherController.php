@@ -7,7 +7,7 @@ use app\admin\model\Grade;
 use app\admin\model\Teacher;
 use app\admin\validate\TeacherValidate;
 use app\admin\model\Campus;
-use app\admin\model\salarytemp;
+use app\admin\model\Salarytemp;
 use think\Db;
 
 /**
@@ -142,10 +142,12 @@ class TeacherController extends CommonController {
         $teacher = Teacher::get($id);
         $grades = Grade::where(["campusid" => $campusid])->select();
         $subjects = Subject::where(["campusid" => $campusid])->select();
+        $salarytemp = Salarytemp::where(["campusid" => $campusid])->select();
 
         $this->assign("teacher", $teacher);
         $this->assign("grades", $grades);
         $this->assign("subjects", $subjects);
+        $this->assign("salarytemp", $salarytemp);
         return $this->fetch('teacher/update');
     }
 
