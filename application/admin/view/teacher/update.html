@@ -39,7 +39,7 @@
         <label class="col-sm-3 control-label">薪资模板</label>
         <div class="col-sm-5">
             <select class="form-control" name="teacher_salarytemp_id" id="select_salarytemp_id" style="height:33px;width:200px;border-radius:2px;" >
-                {volist name='salarytemps' id='salarytemp'}
+                {volist name="salarytemps" id="salarytemp"}
                 <option value='{$salarytemp.id}' {if $teacher.teacher_salarytemp_id==$salarytemp.id}selected{/if}>{$salarytemp.salarytemp_name}</option>
                 {/volist}
             </select>

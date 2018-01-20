@@ -147,7 +147,7 @@ class TeacherController extends CommonController {
         $this->assign("teacher", $teacher);
         $this->assign("grades", $grades);
         $this->assign("subjects", $subjects);
-        $this->assign("salarytemp", $salarytemp);
+        $this->assign("salarytemps", $salarytemp);
         return $this->fetch('teacher/update');
     }
 

@@ -19,8 +19,8 @@ class TeacherValidate extends Validate
         'teacher_jobtype'=>'require',
         'teacher_status'=>'require',
         'teacher_subject_id'    =>'require',
-        'teacher_grade_id'    =>'require',
         'teacher_joindate'    =>'require',
+        'teacher_salarytemp_id'=>'require',
 
     ];
     protected $message = [
@@ -37,8 +37,8 @@ class TeacherValidate extends Validate
         'teacher_jobtype.require' => '在职类型必须选择',
         'teacher_status.require' => '请选择是否为正式员工',
         'teacher_subject_id.require'      =>'科目必须选择',
-        'teacher_grade_id.require' => '年级必须选择',
         'teacher_joindate.require' => '请选择入职日期',
+        'teacher_salarytemp_id.require' => '薪资模板必须选择',
     ];
     protected function checkphone($value,$rule)
     {
