@@ -199,6 +199,18 @@ class AjaxController extends CommonController {
 
 
     /**
+     * 薪资模板管理
+     * @return mixed
+     */
+    public function salesrecord_manage() {
+        $campusid = session("loginSession")['campusid'];
+        //$this->setPersonalSettings(["teachergridsize"]);
+        $this->assign("campusid", $campusid);
+        return $this->fetch('salesrecord/manage');
+    }
+
+
+    /**
      * 师生消息
      */
     public function feedback_manage() {
