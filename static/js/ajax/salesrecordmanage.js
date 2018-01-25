@@ -374,7 +374,7 @@ $(function() {
     var uploadOption =
             {
                 // 提交url
-                action: "admin/teacher/import",
+                action: "admin/salesrecord/import",
                 // 服务端接收的名称
                 name: "Filedata",
                 // 自动提交
@@ -425,6 +425,28 @@ $(function() {
                 },
                 // 上传完成之后
                 onComplete: function(file, response) {
+                    alert(response.substr(0,1));
+                    if (1)
+                    {
+                        $.TeachDialog({
+                            modalId: null,
+                            animation: null,
+                            title: '系统消息',
+                            content: response,
+                            showCloseButton: true,
+                            showCloseButtonName: '关闭',
+                            CloseButtonAddFunc: function() {
+                            },
+
+                            otherButtonStyles: [],
+                            bootstrapModalOption: {
+                                backdrop: 'static'
+                            },
+                            largeSize: false,
+                            smallSize: false,
+                        });
+                    }
+                    else{
                     $.ajax({
                         url: 'admin/admin/alertlog',
                         data: "t=2" ,
@@ -458,6 +480,7 @@ $(function() {
                             return;
                         }
                     });
+                    }
                    $("#state").val("");
 				   $('#datatable_teacherinfo').datagrid('reload');
                 }
