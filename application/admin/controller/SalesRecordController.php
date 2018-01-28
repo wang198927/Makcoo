@@ -232,7 +232,7 @@ class SalesrecordController extends CommonController {
         $array = $this->read($fil);
         //dump($array);
          $arr = array();
-       return "1";
+         $errStrTotal = '';
        // $campusid = $_POST["campusid"];
         $campusid = session('loginSession')['campusid'];
         for($i=2;$i<count($array)+1;$i++){
@@ -242,7 +242,7 @@ class SalesrecordController extends CommonController {
                     unset($array[$i][$k]);
                 }
                 if($k==1){
-                    $array[$i]['sales_orderid'] = $v;
+                    $array[$i]['sales_ordertypename'] = $v;
                     unset($array[$i][$k]);
                 }
                 if($k==2){
@@ -298,43 +298,55 @@ class SalesrecordController extends CommonController {
            $arr[$i-2]=$array[$i];
            
         }
-       
          for($i=0;$i<count($arr);$i++){
-                
+                $errStr='第'.$i.'行数据';
                 if( null != $a = Db::table("ew_teacher")->field("id")->where(["teacher_name"=>$arr[$i]["sales_teacherid"],"campusid"=>$campusid])->select()){
                     $arr[$i]["sales_teacherid"]=$a[0]['id'];
                 }else{
-                    return '销售员工不存在';
+                    $errStrTotal = $errStrTotal.$errStr.'销售员工不存在\n';
+/*                    return $errStr.'销售员工不存在';*/
                 }
-                if( null != $a = Db::table("ew_subject")->field("id")->where(["subject_name"=>$arr[$i]["teacher_subject_id"],"campusid"=>$campusid])->select()){
-                    $arr[$i]["teacher_subject_id"]=$a[0]['id'];
+                if( null != $a = Db::table("ew_student")->field("id")->where(["student_name"=>$arr[$i]["sales_studentid"],"campusid"=>$campusid])->select()){
+                    $arr[$i]["sales_studentid"]=$a[0]['id'];
                 }else{
-                    $id = Db::table("ew_subject")->insertGetId(["campusid"=>$campusid,"subject_name"=>$arr[$i]["teacher_subject_id"]]);
-                    $arr[$i]["teacher_subject_id"]=$id;
+                    $errStrTotal = $errStrTotal.$errStr.'学员不存在\n';
+                   // return $errStr.'学员不存在';
                 }
-                if($arr[$i]['teacher_jobtype']=='全职'){
-                    $arr[$i]['teacher_jobtype']=1;
-                }else{
-                    $arr[$i]['teacher_jobtype']=0;
-                }
-                if($arr[$i]['teacher_gender']=='男'){
-                    $arr[$i]['teacher_gender']=0;
-                }else{
-                    $arr[$i]['teacher_gender']=1;
-                }
-                if($arr[$i]['teacher_status']=='离职'){
-                    $arr[$i]['teacher_status']=0;
-                }else{
-                    $arr[$i]['teacher_status']=1;
-                }
+                if( null != $a = Db::table("ew_ordertype")->field("order_typename")->where(["order_typename"=>$arr[$i]["sales_ordertypename"],"campusid"=>$campusid])->select()){
+                     $arr[$i]["sales_ordertypename"]=$a[0]['order_typename'];
+                 }else{
+                    $errStrTotal = $errStrTotal.$errStr.'销售单类型不存在\n';
+                     //return $errStr.'销售单类型不存在';
+                 }
+                 if( null != $a = Db::table("ew_coursetype")->field("id")->where(["coursetype_name"=>$arr[$i]["sales_coursetypeid"],"campusid"=>$campusid])->select()){
+                     $arr[$i]["sales_coursetypeid"]=$a[0]['id'];
+                 }else{
+                     $errStrTotal = $errStrTotal.$errStr.'销售课程周期类型不存在\n';
+                     //return $errStr.'销售课程周期类型不存在';
+                 }
+             $arr[$i]["sales_orderid"]=$this->build_order_no($arr[$i]["sales_teacherid"]);
+
+        }
+
+        if($errStrTotal!='')
+        {
+            return $errStrTotal;
         }
        
         for($k=0;$k<count($arr);$k++){
-           $id =  M("teacher")->insertGetId($arr[$k]);
-           $b = sprintf("%06d", $id);
-           M("user")->insert(["campusid" => $campusid, "username" => $b, "password" => $b, "typeid" => 2]);
+            M("Salesrecord")->insertGetId($arr[$k]);
+
         }
         
-        
+        return '1';
+    }
+
+
+    /*
+    获取订单流水号
+    */
+    public function build_order_no($teacherId)
+    {
+        return date('Ymd').$teacherId.substr(implode(NULL, array_map('ord', str_split(substr(uniqid(), 7, 6), 1))), 0, 6);
     }
 }

@@ -425,9 +425,43 @@ $(function() {
                 },
                 // 上传完成之后
                 onComplete: function(file, response) {
-                    alert(response.substr(0,1));
-                    if (1)
+                    if (response.substr(0,1)=='1')
                     {
+                        $.ajax({
+                            url: 'admin/admin/alertlog',
+                            data: "t=2" ,
+                            type: 'POST',
+                            dataType: 'HTML', //返回的数据类型
+                            success: function(updatemodalhtml) {
+                                content = updatemodalhtml;
+                                //弹出修改框
+                                $.TeachDialog({
+                                    modalId: null,
+                                    animation: null,
+                                    title: '系统消息',
+                                    content: content,
+                                    showCloseButton: true,
+                                    showCloseButtonName: '关闭',
+                                    CloseButtonAddFunc: function() {
+                                    },
+
+                                    otherButtonStyles: [],
+                                    bootstrapModalOption: {
+                                        backdrop: 'static'
+                                    },
+                                    largeSize: false,
+                                    smallSize: false,
+                                });
+                            },
+                            error: function() {
+                                $.TeachDialog({
+                                    content: '获取数据失败，无法进行修改',
+                                });
+                                return;
+                            }
+                        });
+                                            }
+                    else{
                         $.TeachDialog({
                             modalId: null,
                             animation: null,
@@ -445,41 +479,6 @@ $(function() {
                             largeSize: false,
                             smallSize: false,
                         });
-                    }
-                    else{
-                    $.ajax({
-                        url: 'admin/admin/alertlog',
-                        data: "t=2" ,
-                        type: 'POST',
-                        dataType: 'HTML', //返回的数据类型
-                        success: function(updatemodalhtml) {
-                            content = updatemodalhtml;
-                            //弹出修改框
-                            $.TeachDialog({
-                                modalId: null,
-                                animation: null,
-                                title: '系统消息',
-                                content: content,
-                                showCloseButton: true,
-                                showCloseButtonName: '关闭',
-                                CloseButtonAddFunc: function() {
-                                },
-
-                                otherButtonStyles: [],
-                                bootstrapModalOption: {
-                                    backdrop: 'static'
-                                },
-                                largeSize: false,
-                                smallSize: false,
-                            });
-                        },
-                        error: function() {
-                            $.TeachDialog({
-                                content: '获取数据失败，无法进行修改',
-                            });
-                            return;
-                        }
-                    });
                     }
                    $("#state").val("");
 				   $('#datatable_teacherinfo').datagrid('reload');
