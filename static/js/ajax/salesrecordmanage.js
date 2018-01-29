@@ -23,20 +23,20 @@ function getSearchParams(params) {
  * ajax 获得年级信息
  * @constructor
  */
-function GradeList() {
+function OrderTypeList() {
     $.ajax({
-        url: 'admin/Grade/getJson',
+        url: 'admin/Salesrecord/getOrderTypeJson',
         dataType: 'JSON',
         success: function(data) {
-            $("#teacher_grade_id").empty();
-            $("#teacher_grade_id").append("<option value=''>选择年级</option>");
+            $("#sales_ordertypeid").empty();
+            $("#sales_ordertypeid").append("<option value=''>选择销售单类型</option>");
             $.each(data, function(i, d) {
-                $("#teacher_grade_id").append('<option value="' + d.id + '">' + d.grade_name + '</option>');
+                $("#sales_ordertypeid").append('<option value="' + d.id + '">' + d.order_typename + '</option>');
             });
         },
         error: function() {
             $.TeachDialog({
-                content: '加载年级数据失败',
+                content: '加载销售单类型数据失败',
             });
         }
     });
@@ -46,20 +46,20 @@ function GradeList() {
  * ajax 获得科目信息
  * @constructor
  */
-function SubjectList() {
+function CourseTypeList() {
     $.ajax({
-        url: 'admin/Subject/getJson',
+        url: 'admin/Salesrecord/getCourseTypeJson',
         dataType: 'JSON',
         success: function(data) {
-            $("#teacher_subject_id").empty();
-            $("#teacher_subject_id").append("<option value=''>选择科目</option>");
+            $("#sales_coursetypeid").empty();
+            $("#sales_coursetypeid").append("<option value=''>课程周期类型</option>");
             $.each(data, function(i, d) {
-                $("#teacher_subject_id").append('<option value="' + d.id + '">' + d.subject_name + '</option>');
+                $("#sales_coursetypeid").append('<option value="' + d.id + '">' + d.coursetype_name + '</option>');
             });
         },
         error: function() {
             $.TeachDialog({
-                content: '加载科目数据失败',
+                content: '加载学生类型数据失败',
             });
         }
     });
@@ -73,25 +73,25 @@ function SubjectList() {
 
 $(function() {
     //加载下拉框数据
-    GradeList();
-    SubjectList();
+    OrderTypeList();
+    CourseTypeList();
 
     var cellwidth = ($(".box-content.table-responsive").width() - 55) / 11;
-    var psval = $('#datatable_teacherinfo').attr('data-size');
+    var psval = $('#datatable_salesrecord').attr('data-size');
     if (psval == undefined || psval == "") {
         psval = 10;
     }
     /**
      * easyui 生成表格数据
      */
-    $('#datatable_teacherinfo').datagrid({
+    $('#datatable_salesrecord').datagrid({
         singleSelect: false, //允许选择多行
         striped: true,
         idField: 'id',
         remoteSort: false,
         collapsible: true,
         fit: false,
-        url: 'admin/teacher/getTeachers', //数据源路径
+        url: '', //数据源路径
         loadMsg: '请等待数据载入....',
         pagination: true,
         rownumbers: true,
@@ -105,116 +105,56 @@ $(function() {
                     sortable: true,
                     width: cellwidth,
                 }, {
-                    field: 'teacher_name',
-                    title: '姓名',
+                    field: 'sales_orderid',
+                    title: '销售单号',
                     align: 'center',
                     width: cellwidth,
                     sortable: true
                 }, {
-                    field: 'teacher_telphone',
-                    title: '电话',
+                    field: 'teacher',
+                    title: '销售员工',
+                    align: 'center',
+                    width: cellwidth,
+                    sortable: true,
+                    formatter: function(teacher) {
+                        return teacher.teacher_name;
+                    }
+                }, {
+                    field: 'ordertype',
+                    title: '销售单类型',
+                    align: 'center',
+                    width: cellwidth,
+                    sortable: true,
+                    formatter: function(ordertype) {
+                        return ordertype.order_typename;
+                    }
+                }, {
+                    field: 'sales_money',
+                    title: '销售金额',
                     align: 'center',
                     width: cellwidth,
                     sortable: true,
                 }, {
-                    field: 'teacher_gender',
-                    title: '性别',
+                    field: 'student',
+                    title: '学生姓名',
                     align: 'center',
                     width: cellwidth,
                     sortable: true,
-                    formatter: function(value) {
-                        if (value == 0) {
-                            return "男";
-                        } else if (value == 1) {
-                            return "女";
-                        }
-                    },
+                    formatter: function(student) {
+                        return student.student_name;
+                    }
                 }, {
-                    field: 'teacher_idcard',
-                    title: '身份证号',
+                    field: 'coursetype',
+                    title: '课程周期类型',
                     align: 'center',
                     width: cellwidth,
                     sortable: true,
+                    formatter: function(coursetype) {
+                        return coursetype.coursetype_name;
+                    }
                 }, {
-                    field: 'teacher_email',
-                    title: 'email',
-                    align: 'center',
-                    width: cellwidth,
-                    sortable: true,
-                }, {
-                    field: 'teacher_qq',
-                    title: 'qq',
-                    align: 'center',
-                    width: cellwidth,
-                    sortable: true,
-                }, {
-                    field: 'subject',
-                    title: '科目',
-                    align: 'center',
-                    width: cellwidth,
-                    sortable: true,
-                    formatter: function(subject) {
-                        return subject.subject_name;
-                    },
-                }, {
-                    field: 'grade',
-                    title: '年级',
-                    align: 'center',
-                    width: cellwidth,
-                    sortable: true,
-                    formatter: function(grade) {
-                        return grade.grade_name;
-                    },
-                }, {
-                    field: 'teacher_jobtype',
-                    title: '在职类型',
-                    align: 'center',
-                    width: cellwidth,
-                    sortable: true,
-                    formatter: function(value) {
-                        if (value == 0) {
-                            return "兼职";
-                        } else if (value == 1) {
-                            return "全职";
-                        }
-                    },
-                }, {
-                    field: 'teacher_status',
-                    title: '是否在职',
-                    align: 'center',
-                    width: cellwidth,
-                    sortable: true,
-                    formatter: function(value) {
-                        if (value == 1) {
-                            return "是";
-                        } else if (value == 0) {
-                            return "否";
-                        }
-                    },
-                }, {
-                    field: 'teacher_bankaccount',
-                    title: '银行卡号',
-                    align: 'center',
-                    width: cellwidth,
-                    sortable: true,
-                }, {
-                    field: 'salarytemp',
-                    title: '薪资模板',
-                    align: 'center',
-                    width: cellwidth,
-                    sortable: true,
-                    formatter: function(salarytemp) {
-                        return salarytemp.salarytemp_name;
-                },
-                },{
-                    field: 'teacher_joindate',
-                    title: '入职日期',
-                    align: 'center',
-                    width: cellwidth,
-                    sortable: true,
-                }, {
-                    field: 'teacher_befulldate',
-                    title: '转正日期',
+                    field: 'sales_day',
+                    title: '销售日期',
                     align: 'center',
                     width: cellwidth,
                     sortable: true,
@@ -226,7 +166,8 @@ $(function() {
 
 
     $('#Search').click(function() {
-        $('#datatable_teacherinfo').datagrid('reload');
+        $('#datatable_salesrecord').datagrid({url:'admin/Salesrecord/getSalesRecord'});
+        $('#datatable_salesrecord').datagrid('reload');
     })
     /*
      *编辑

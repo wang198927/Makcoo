@@ -132,7 +132,7 @@ class CommonController extends Controller {
     /**
      * 筛选搜索条件不是like是=
      */
-    public function searchNotLike($searchPath=[],$postArr=[],$one='',$two='',$three='') {
+    public function searchNotLike($searchPath=[],$postArr=[],$one='',$two='',$three='',$four='',$five='') {
         if (isset($searchPath[$one]) && $one != '') {
             unset($searchPath[$one]);
             $searchPath[$one] = $postArr[$one];
@@ -144,6 +144,14 @@ class CommonController extends Controller {
         if (isset($searchPath[$three]) && $three != '') {
             unset($searchPath[$three]);
             $searchPath[$three] = $postArr[$three];
+        }
+        if (isset($searchPath[$four]) && $four != '') {
+            unset($searchPath[$four]);
+            $searchPath[$four] = $postArr[$four];
+        }
+        if (isset($searchPath[$five]) && $five != '') {
+            unset($searchPath[$five]);
+            $searchPath[$five] = $postArr[$five];
         }
         return $searchPath;
     }

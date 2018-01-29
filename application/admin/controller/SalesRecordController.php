@@ -2,12 +2,10 @@
 
 namespace app\admin\controller;
 
-use app\admin\model\Subject;
-use app\admin\model\Grade;
 use app\admin\model\Teacher;
 use app\admin\validate\TeacherValidate;
 use app\admin\model\Campus;
-use app\admin\model\Salarytemp;
+use app\admin\model\Salesrecord;
 use think\Db;
 
 /**
@@ -19,25 +17,47 @@ use think\Db;
  */
 class SalesrecordController extends CommonController {
 
+
+
     /**
-     * ajax获得年级信息
+     * 获得数据
+     * Author mww
      */
-    public function getGrade() {
-		if($this->redis()){
-            if($this->redis->EXISTS('DgetGrade'))
-               return $this->redis->get("DgetGrade");
-
+    public function getSalesRecord()
+    {
+        $rows = $_POST['rows'];
+        $page = $_POST['page'];
+        $status = '';
+        //过滤日期范围
+        $start = "";
+        $end = "";
+        if(empty($_POST['starttime'])){
+            $start = 0;
+            unset($_POST['starttime']);
+        }else{
+            $start = $_POST['starttime'];
+            unset($_POST['starttime']);
+        };
+        if(empty($_POST['endtime'])){
+            $end = '2100-12-31';
+            unset($_POST['endtime']);
+        }else{
+            $end = $_POST['endtime'];
+            unset($_POST['endtime']);
+        };
+        //过滤结束==============================
+        $path = $this->getDataByCampusid($_POST);
+        $searchPath = $this->searchNotLike($path,$_POST,'sales_ordertypeid','sales_coursetypeid');
+        if(isset($searchPath['campusid'])){
+            $searchPath['salesrecord.sales_campusid'] = $searchPath["campusid"];
+            unset($searchPath["campusid"]);
         }
-        $campusid = session("loginSession")['campusid'];
-        $list = $this->arr_index(Grade::where(["campusid" => $campusid])->select());
-		if($this->redis()) {
-            $this->redis->set("DgetGrade",json_encode($list));
-        }
-        $list = json_encode($list);
-
-        return $list;
+        $salesrecord = Salesrecord::with("student,teacher,ordertype,coursetype")->where($searchPath)->where('sales_day','between',"{$start},{$end}")->limit($rows * ($page - 1), $rows)->select();
+        $total = Salesrecord::with("student,teacher,ordertype,coursetype")->where($searchPath)->where('sales_day','between',"{$start},{$end}")->count();
+        $data['total'] = $total;
+        $data['rows'] = $salesrecord;
+        return json_encode($data);
     }
-
     /**
      * 插入老师数据
      * @return mixed
@@ -85,37 +105,6 @@ class SalesrecordController extends CommonController {
             $returnData['msg'] = "修改成功";
             return json_encode($returnData);
         }
-    }
-
-    /**
-     * 获得教师信息json数据
-     */
-    public function getTeachers() {
-        $rows = $_POST['rows'];
-        $page = $_POST['page'];
-        $path = $this->getDataByCampusid($_POST);
-        //课程年级班级不能like
-        if (isset($searchPath['teacher_subject_id'])) {
-            unset($searchPath["teacher_subject_id"]);
-            $searchPath['teacher_subject_id'] = $_POST['teacher_subject_id'];
-
-        }
-        if (isset($searchPath['teacher_grade_id'])) {
-            unset($searchPath["teacher_grade_id"]);
-            $searchPath['teacher_grade_id'] = $_POST['teacher_grade_id'];
-
-        }
-        $searchPath = $this->searchNotLike($path,$_POST,'teacher_subject_id','teacher_grade_id');
-        //end
-        if (isset($searchPath['campusid'])) {
-            $searchPath['teacher.campusid'] = $searchPath["campusid"];
-            unset($searchPath["campusid"]);
-        }
-        $students = Teacher::with("grade,subject,salarytemp")->where($searchPath)->order("teacher.id desc")->limit($rows * ($page - 1), $rows)->select();
-        $total = Teacher::with("grade,subject,salarytemp")->where($searchPath)->count();
-        $data['total'] = $total;
-        $data['rows'] = $students;
-        return json_encode($data);
     }
 
     /**
@@ -242,7 +231,7 @@ class SalesrecordController extends CommonController {
                     unset($array[$i][$k]);
                 }
                 if($k==1){
-                    $array[$i]['sales_ordertypename'] = $v;
+                    $array[$i]['sales_ordertypeid'] = $v;
                     unset($array[$i][$k]);
                 }
                 if($k==2){
@@ -276,22 +265,6 @@ class SalesrecordController extends CommonController {
                 if($k==9){
                     $array[$i]['teacher_qq'] = $v;
                     unset($array[$i][$k]);
-                }
-                if($k==10){
-                    $array[$i]['teacher_joindate'] = $v;
-                    unset($array[$i][$k]);
-                }
-                if($k==11){
-                    $array[$i]['teacher_befulldate'] = $v;
-                    unset($array[$i][$k]);
-                }
-                if($k==12){
-                    $array[$i]['teacher_status'] = $v;
-                    unset($array[$i][$k]);
-                }
-                if($k==13){
-                    $array[$i]['teacher_remark'] = $v;
-                    unset($array[$i][$k]);
                 }*/
                 $array[$i]['campusid'] = $campusid;
             }
@@ -312,8 +285,8 @@ class SalesrecordController extends CommonController {
                     $errStrTotal = $errStrTotal.$errStr.'学员不存在\n';
                    // return $errStr.'学员不存在';
                 }
-                if( null != $a = Db::table("ew_ordertype")->field("order_typename")->where(["order_typename"=>$arr[$i]["sales_ordertypename"],"campusid"=>$campusid])->select()){
-                     $arr[$i]["sales_ordertypename"]=$a[0]['order_typename'];
+                if( null != $a = Db::table("ew_ordertype")->field("id")->where(["order_typename"=>$arr[$i]["sales_ordertypeid"],"campusid"=>$campusid])->select()){
+                     $arr[$i]["sales_ordertypeid"]=$a[0]['id'];
                  }else{
                     $errStrTotal = $errStrTotal.$errStr.'销售单类型不存在\n';
                      //return $errStr.'销售单类型不存在';
@@ -347,6 +320,46 @@ class SalesrecordController extends CommonController {
     */
     public function build_order_no($teacherId)
     {
-        return date('Ymd').$teacherId.substr(implode(NULL, array_map('ord', str_split(substr(uniqid(), 7, 6), 1))), 0, 6);
+        return 'XS'.date('Ymd').$teacherId.substr(implode(NULL, array_map('ord', str_split(substr(uniqid(), 7, 6), 1))), 0, 6);
+    }
+
+
+    /*
+    ajax获得销售单类型JSON数据
+    */
+    public function getOrderTypeJson()
+    {
+        if($this->redis()){
+            if($this->redis->EXISTS('DgetGJSON'))
+                return $this->redis->get("DgetGJSON");
+
+        }
+        $campusid = session("loginSession")['campusid'];
+        $list = Db::name("ordertype")->where(["campusid"=>$campusid])->select();
+        if($this->redis()) {
+            $this->redis->set("DgetGJSON",json_encode($list));
+
+        }
+        return json_encode($list);
+    }
+
+
+    /*
+    ajax获得销售课程周期类型JSON数据
+    */
+    public function getCourseTypeJson()
+    {
+        if($this->redis()){
+            if($this->redis->EXISTS('DgetGJSON'))
+                return $this->redis->get("DgetGJSON");
+
+        }
+        $campusid = session("loginSession")['campusid'];
+        $list = Db::name("coursetype")->where(["campusid"=>$campusid])->select();
+        if($this->redis()) {
+            $this->redis->set("DgetGJSON",json_encode($list));
+
+        }
+        return json_encode($list);
     }
 }
