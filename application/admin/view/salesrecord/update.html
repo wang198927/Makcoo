@@ -1,0 +1,38 @@
+<div>
+<form class="form-horizontal bv-form"  role="form"  id="updateForm">
+    <input type="hidden" id="id" name="id" value="{$salesrecord.sales_orderid}">
+    <fieldset>
+        <legend>订单信息 {$salesrecord.sales_orderid}</legend>
+
+
+    <div class="form-group">
+        <label class="col-sm-3 control-label">销售员工</label>
+        <div class="col-sm-5">
+            <input type="text" class="form-control" name="sales_teachername" value="{$salesrecord.teacher.teacher_name}">
+        </div>
+    </div>
+
+        <div class="form-group">
+            <label class="col-sm-3 control-label">销售金额</label>
+            <div class="col-sm-5">
+                <input type="text" class="form-control" name="sales_money" value="{$salesrecord.sales_money}">
+            </div>
+        </div>
+        <div class="form-group">
+            <label class="col-sm-3 control-label">学生姓名</label>
+            <div class="col-sm-5">
+                <input type="text" class="form-control" name="student_name" value="{$salesrecord.student.student_name}">
+            </div>
+        </div>
+        <div class="form-group">
+            <label class="col-sm-3 control-label">销售日期</label>
+            <div class="col-sm-5">
+                <input type="text" class="form-control" name="sales_day" value="{$salesrecord.sales_day}">
+            </div>
+        </div>
+
+    </fieldset>
+</form>
+</div>
+
+

@@ -2,6 +2,8 @@
 
 namespace app\admin\controller;
 
+use app\admin\model\Coursetype;
+use app\admin\model\Ordertype;
 use app\admin\model\Teacher;
 use app\admin\validate\TeacherValidate;
 use app\admin\model\Campus;
@@ -47,13 +49,17 @@ class SalesrecordController extends CommonController {
         };
         //过滤结束==============================
         $path = $this->getDataByCampusid($_POST);
-        $searchPath = $this->searchNotLike($path,$_POST,'sales_ordertypeid','sales_coursetypeid');
+        $searchPath = $this->searchNotLike($path,$_POST,'sales_ordertypename','sales_coursetypename');
         if(isset($searchPath['campusid'])){
             $searchPath['salesrecord.sales_campusid'] = $searchPath["campusid"];
             unset($searchPath["campusid"]);
         }
-        $salesrecord = Salesrecord::with("student,teacher,ordertype,coursetype")->where($searchPath)->where('sales_day','between',"{$start},{$end}")->limit($rows * ($page - 1), $rows)->select();
-        $total = Salesrecord::with("student,teacher,ordertype,coursetype")->where($searchPath)->where('sales_day','between',"{$start},{$end}")->count();
+        $salesrecord = Salesrecord::with("teacher,student")->where($searchPath)->where('sales_day','between',"{$start},{$end}")->order("sales_day desc")->limit($rows * ($page - 1), $rows)->select();
+        $total = Salesrecord::with("teacher,student")->where($searchPath)->where('sales_day','between',"{$start},{$end}")->count();
+
+
+        //$salesrecord = Db::table('ew_salesrecord')->alias('a')->join('ew_teacher c ','a.sales_teacherid=c.id','left')->where($searchPath)->where('a.sales_day','between',"{$start},{$end}")->limit($rows * ($page - 1), $rows)->select();
+        //$total = Salesrecord::with("ordertype,coursetype")->where($searchPath)->where('sales_day','between',"{$start},{$end}")->count();
         $data['total'] = $total;
         $data['rows'] = $salesrecord;
         return json_encode($data);
@@ -126,18 +132,15 @@ class SalesrecordController extends CommonController {
      */
     public function updatemodal() {
         $campusid = session("loginSession")['campusid'];
-        $id = input('id');
+        $sales_orderid = input('sales_orderid');
         //获取要修改的老师信息
-        $teacher = Teacher::get($id);
-        $grades = Grade::where(["campusid" => $campusid])->select();
-        $subjects = Subject::where(["campusid" => $campusid])->select();
-        $salarytemp = Salarytemp::where(["campusid" => $campusid])->select();
-
-        $this->assign("teacher", $teacher);
-        $this->assign("grades", $grades);
-        $this->assign("subjects", $subjects);
-        $this->assign("salarytemps", $salarytemp);
-        return $this->fetch('teacher/update');
+        $salesrecord= Salesrecord::with("teacher,student")->where(["sales_orderid" => $sales_orderid])->find();
+        $ordertype = Ordertype::where(["campusid" => $campusid])->select();
+        $coursetype = Coursetype::where(["campusid" => $campusid])->select();
+        $this->assign("salesrecord", $salesrecord);
+        //$this->assign("ordertype", $ordertype);
+        //$this->assign("coursetype", $coursetype);
+        return $this->fetch('salesrecord/update');
     }
 
     /**
@@ -146,8 +149,8 @@ class SalesrecordController extends CommonController {
     public function deleteByIDs() {
         $ids = input('ids');
         $ids = rtrim($ids, ",");
-        $map['id'] = array('in', $ids);
-        $deleteinfo = Teacher::where($map)->delete();
+        $map['sales_orderid'] = array('in', $ids);
+        $deleteinfo = Salesrecord::where($map)->delete();
         if ($deleteinfo) {
             return json_encode(array("status" => 1, "msg" => "删除成功！"));
         } else {
@@ -155,13 +158,6 @@ class SalesrecordController extends CommonController {
         }
     }
 
-    public function arr_index($arrs) {
-        $arr_index = array();
-        foreach ($arrs as $arr) {
-            $arr_index[$arr['id']] = $arr;
-        }
-        return $arr_index;
-    }
     /*
      * 导出老师excel表格
      */
@@ -231,7 +227,7 @@ class SalesrecordController extends CommonController {
                     unset($array[$i][$k]);
                 }
                 if($k==1){
-                    $array[$i]['sales_ordertypeid'] = $v;
+                    $array[$i]['sales_ordertypename'] = $v;
                     unset($array[$i][$k]);
                 }
                 if($k==2){
@@ -243,7 +239,7 @@ class SalesrecordController extends CommonController {
                     unset($array[$i][$k]);
                 }
                 if($k==4){
-                    $array[$i]['sales_coursetypeid'] = $v;
+                    $array[$i]['sales_coursetypename'] = $v;
                     unset($array[$i][$k]);
                 }
                 if($k==5){
@@ -266,7 +262,7 @@ class SalesrecordController extends CommonController {
                     $array[$i]['teacher_qq'] = $v;
                     unset($array[$i][$k]);
                 }*/
-                $array[$i]['campusid'] = $campusid;
+                $array[$i]['sales_campusid'] = $campusid;
             }
            $arr[$i-2]=$array[$i];
            
@@ -285,14 +281,14 @@ class SalesrecordController extends CommonController {
                     $errStrTotal = $errStrTotal.$errStr.'学员不存在\n';
                    // return $errStr.'学员不存在';
                 }
-                if( null != $a = Db::table("ew_ordertype")->field("id")->where(["order_typename"=>$arr[$i]["sales_ordertypeid"],"campusid"=>$campusid])->select()){
-                     $arr[$i]["sales_ordertypeid"]=$a[0]['id'];
+                if( null != $a = Db::table("ew_ordertype")->field("order_typename")->where(["order_typename"=>$arr[$i]["sales_ordertypename"],"campusid"=>$campusid])->select()){
+                     $arr[$i]["sales_ordertypename"]=$a[0]['order_typename'];
                  }else{
                     $errStrTotal = $errStrTotal.$errStr.'销售单类型不存在\n';
                      //return $errStr.'销售单类型不存在';
                  }
-                 if( null != $a = Db::table("ew_coursetype")->field("id")->where(["coursetype_name"=>$arr[$i]["sales_coursetypeid"],"campusid"=>$campusid])->select()){
-                     $arr[$i]["sales_coursetypeid"]=$a[0]['id'];
+                 if( null != $a = Db::table("ew_coursetype")->field("coursetype_name")->where(["coursetype_name"=>$arr[$i]["sales_coursetypename"],"campusid"=>$campusid])->select()){
+                     $arr[$i]["sales_coursetypename"]=$a[0]['coursetype_name'];
                  }else{
                      $errStrTotal = $errStrTotal.$errStr.'销售课程周期类型不存在\n';
                      //return $errStr.'销售课程周期类型不存在';
@@ -320,7 +316,8 @@ class SalesrecordController extends CommonController {
     */
     public function build_order_no($teacherId)
     {
-        return 'XS'.date('Ymd').$teacherId.substr(implode(NULL, array_map('ord', str_split(substr(uniqid(), 7, 6), 1))), 0, 6);
+        $teacherId=str_pad($teacherId, 3, "0", STR_PAD_LEFT);
+        return 'XS'.date('Ymd').$teacherId.substr(implode(NULL, array_map('ord', str_split(substr(uniqid(), 7, 13), 1))), 0, 8);
     }
 
 

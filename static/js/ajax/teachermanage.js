@@ -353,6 +353,7 @@ $(function() {
                                 content: data.msg,
                                 CloseButtonAddFunc: function() {
                                     $('#datatable_teacherinfo').datagrid('reload');
+                                    $('#datatable_teacherinfo').datagrid('uncheckAll');
                                 }
                             });
                         } else {

@@ -28,10 +28,10 @@ function OrderTypeList() {
         url: 'admin/Salesrecord/getOrderTypeJson',
         dataType: 'JSON',
         success: function(data) {
-            $("#sales_ordertypeid").empty();
-            $("#sales_ordertypeid").append("<option value=''>选择销售单类型</option>");
+            $("#sales_ordertypename").empty();
+            $("#sales_ordertypename").append("<option value=''>选择销售单类型</option>");
             $.each(data, function(i, d) {
-                $("#sales_ordertypeid").append('<option value="' + d.id + '">' + d.order_typename + '</option>');
+                $("#sales_ordertypename").append('<option value="' + d.order_typename + '">' + d.order_typename + '</option>');
             });
         },
         error: function() {
@@ -51,10 +51,10 @@ function CourseTypeList() {
         url: 'admin/Salesrecord/getCourseTypeJson',
         dataType: 'JSON',
         success: function(data) {
-            $("#sales_coursetypeid").empty();
-            $("#sales_coursetypeid").append("<option value=''>课程周期类型</option>");
+            $("#sales_coursetypename").empty();
+            $("#sales_coursetypename").append("<option value=''>课程周期类型</option>");
             $.each(data, function(i, d) {
-                $("#sales_coursetypeid").append('<option value="' + d.id + '">' + d.coursetype_name + '</option>');
+                $("#sales_coursetypename").append('<option value="' + d.coursetype_name + '">' + d.coursetype_name + '</option>');
             });
         },
         error: function() {
@@ -87,7 +87,7 @@ $(function() {
     $('#datatable_salesrecord').datagrid({
         singleSelect: false, //允许选择多行
         striped: true,
-        idField: 'id',
+        idField: 'sales_orderid',
         remoteSort: false,
         collapsible: true,
         fit: false,
@@ -120,14 +120,11 @@ $(function() {
                         return teacher.teacher_name;
                     }
                 }, {
-                    field: 'ordertype',
+                    field: 'sales_ordertypename',
                     title: '销售单类型',
                     align: 'center',
                     width: cellwidth,
                     sortable: true,
-                    formatter: function(ordertype) {
-                        return ordertype.order_typename;
-                    }
                 }, {
                     field: 'sales_money',
                     title: '销售金额',
@@ -144,14 +141,11 @@ $(function() {
                         return student.student_name;
                     }
                 }, {
-                    field: 'coursetype',
+                    field: 'sales_coursetypename',
                     title: '课程周期类型',
                     align: 'center',
                     width: cellwidth,
                     sortable: true,
-                    formatter: function(coursetype) {
-                        return coursetype.coursetype_name;
-                    }
                 }, {
                     field: 'sales_day',
                     title: '销售日期',
@@ -173,7 +167,7 @@ $(function() {
      *编辑
      */
     $('#edit').click(function() {
-        var rows = $('#datatable_teacherinfo').datagrid('getSelections');
+        var rows = $('#datatable_salesrecord').datagrid('getSelections');
         if (rows.length != 1) {
             $.TeachDialog({
                 content: '请选择一行数据！',
@@ -183,8 +177,8 @@ $(function() {
 
         var content = "";
         $.ajax({
-            url: 'admin/teacher/updatemodal',
-            data: "id=" + rows[0].id,
+            url: 'admin/Salesrecord/updatemodal',
+            data: "sales_orderid=" + rows[0].sales_orderid,
             dataType: "HTML", //返回数据类型
             type: 'POST',
             success: function(updatemodalhtml) {
@@ -193,7 +187,7 @@ $(function() {
                 $.TeachDialog({
                     modalId: null,
                     animation: null,
-                    title: '教师信息',
+                    title: '订单信息',
                     content: content,
                     showCloseButton: true,
                     showCloseButtonName: '关闭',
@@ -236,7 +230,7 @@ $(function() {
                                         content: returnData.msg,
                                         showCloseButton: false,
                                     });
-                                    $('#datatable_teacherinfo').datagrid('reload');
+                                    $('#datatable_salesrecord').datagrid('reload');
                                 }
                             },
                             error: function() {
@@ -255,7 +249,8 @@ $(function() {
      * 删除
      */
     $('#del').click(function() {
-        var rows = $('#datatable_teacherinfo').datagrid('getSelections');
+        var rows = $('#datatable_salesrecord').datagrid('getSelections');
+        alert(rows.length);
         if (rows.length == 0) {
             $.TeachDialog({
                 content: '请至少选择一行数据！',
@@ -265,13 +260,12 @@ $(function() {
         var idsdata = "";
         var selectedstr = "";
         for (var i = 0; i < rows.length; i++) {
-            idsdata += rows[i].id + ",";
-            selectedstr += rows[i].teacher_name + "，";
+            idsdata += rows[i].sales_orderid + ",";
         }
         idsdata = idsdata.substring(0, idsdata.length - 1);
-        selectedstr = selectedstr.substring(0, selectedstr.length - 1);
+        //selectedstr = selectedstr.substring(0, selectedstr.length - 1);
         $.TeachDialog({
-            content: "确认删除以下老师？<br>" + selectedstr,
+            content: "确认删除以下订单？<br>" + idsdata,
             showCloseButton: true,
             showCloseButtonName: '取消',
             otherButtons: ['确认'],
@@ -279,7 +273,7 @@ $(function() {
             clickButton: function(sender, modal, index) {
                 modal.modal('hide');
                 $.ajax({
-                    url: 'Admin/Teacher/deleteByIDs', //form action
+                    url: 'Admin/Salesrecord/deleteByIDs', //form action
                     dataType: 'JSON', //返回体类型
                     type: 'POST', // form type
                     data: "ids=" + idsdata, //  请求参数
@@ -288,7 +282,8 @@ $(function() {
                             $.TeachDialog({
                                 content: data.msg,
                                 CloseButtonAddFunc: function() {
-                                    $('#datatable_teacherinfo').datagrid('reload');
+                                    $('#datatable_salesrecord').datagrid('reload');
+                                    $('#datatable_salesrecord').datagrid('uncheckAll');
                                 }
                             });
                         } else {
