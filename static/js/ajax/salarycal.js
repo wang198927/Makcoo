@@ -145,7 +145,7 @@ $(function () {
         $('#datatable_salaryinfo').datagrid('load');
     })*/
 
-    // 给上传按钮增加上传动作
+    // 给导出按钮增加导出动作
     $("#export").click(function()
     {
         var searchParams = getSearchParams();

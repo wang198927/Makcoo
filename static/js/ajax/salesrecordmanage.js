@@ -163,6 +163,72 @@ $(function() {
         $('#datatable_salesrecord').datagrid({url:'admin/Salesrecord/getSalesRecord'});
         $('#datatable_salesrecord').datagrid('reload');
     })
+
+    /*
+     *新增
+     */
+    $('#add').click(function(){
+        var content = "";
+        $.ajax({
+            url: 'admin/Salesrecord/addsalesreord',
+            type: 'POST',
+            dataType: 'HTML',//返回的数据类型
+            success: function (updatemodalhtml) {
+                content = updatemodalhtml;
+                //弹出添加框
+                $.TeachDialog({
+                    modalId: null,
+                    animation: null,
+                    title: '添加销售记录',
+                    content: content,
+                    showCloseButton: true,
+                    showCloseButtonName: '关闭',
+                    CloseButtonAddFunc: function () {
+                    },
+                    otherButtons: ['添加'],
+                    otherButtonStyles: ['btn-primary'],
+
+
+                    clickButton: function (sender, modal, index) {
+                        $.ajax({
+                            url: 'admin/Salesrecord/insert',
+                            data: $("#addForm").serialize(),
+                            type: 'POST',
+                            dataType: 'JSON',
+                            success: function (returnData) {
+                                if (returnData.status == 0) {
+                                    $.TeachDialog({
+                                        content: returnData.msg,
+
+                                    });
+                                } else {
+                                    modal.modal('hide');
+                                    $.TeachDialog({
+                                        content: returnData.msg,
+                                        showCloseButton: false,
+                                    });
+                                    $('#datatable_salesrecord').datagrid('reload');
+                                }
+                            },
+                            error: function () {
+                                $.TeachDialog({
+                                    content: '系统异常，请联系管理员',
+                                });
+                            },
+
+                        });
+
+                    },
+                });
+            },
+            error: function () {
+                $.TeachDialog({
+                    content: '获取数据失败，无法进行修改',
+                });
+                return;
+            }
+        });
+    });
     /*
      *编辑
      */
@@ -210,8 +276,8 @@ $(function() {
                     },
                     clickButton: function(sender, modal, index) {
                         $.ajax({
-                            url: 'admin/Teacher/update',
-                            data: $("#listForm").serialize(),
+                            url: 'admin/Salesrecord/update',
+                            data: $("#updateForm").serialize(),
                             type: 'POST',
                             dataType: 'JSON',
                             success: function(returnData) {
@@ -417,7 +483,6 @@ $(function() {
                         });
                     }
                    $("#state").val("");
-				   $('#datatable_teacherinfo').datagrid('reload');
                 }
             }
 
@@ -464,4 +529,16 @@ $(function() {
 		}
         oAjaxUpload.submit();
     });
+
+
+    // 给导出按钮增加导出动作
+    $("#export").click(function()
+    {
+        var searchParams = getSearchParams();
+
+        window.location.href = "admin/salesrecord/export?sales_orderid="+searchParams['sales_orderid']+"&teacher_name="+searchParams['teacher_name']
+            +"&student_name="+searchParams['student_name']+"&sales_ordertypename="+searchParams['sales_ordertypename']+"&sales_coursetypename="+searchParams['sales_coursetypename']
+            +"&starttime="+searchParams['starttime']+"&endtime="+searchParams['endtime'];
+    });
+
 });

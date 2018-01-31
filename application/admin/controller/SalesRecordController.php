@@ -5,7 +5,7 @@ namespace app\admin\controller;
 use app\admin\model\Coursetype;
 use app\admin\model\Ordertype;
 use app\admin\model\Teacher;
-use app\admin\validate\TeacherValidate;
+use app\admin\validate\SalesrecordValidate;
 use app\admin\model\Campus;
 use app\admin\model\Salesrecord;
 use think\Db;
@@ -29,10 +29,6 @@ class SalesrecordController extends CommonController {
     {
         $rows = $_POST['rows'];
         $page = $_POST['page'];
-        $status = '';
-        //过滤日期范围
-        $start = "";
-        $end = "";
         if(empty($_POST['starttime'])){
             $start = 0;
             unset($_POST['starttime']);
@@ -54,6 +50,14 @@ class SalesrecordController extends CommonController {
             $searchPath['salesrecord.sales_campusid'] = $searchPath["campusid"];
             unset($searchPath["campusid"]);
         }
+        if(isset($searchPath['teacher_name'])){
+            $searchPath['teacher.teacher_name'] = $searchPath["teacher_name"];
+            unset($searchPath["teacher_name"]);
+        }
+        if(isset($searchPath['student_name'])){
+            $searchPath['student.student_name'] = $searchPath["student_name"];
+            unset($searchPath["student_name"]);
+        }
         $salesrecord = Salesrecord::with("teacher,student")->where($searchPath)->where('sales_day','between',"{$start},{$end}")->order("sales_day desc")->limit($rows * ($page - 1), $rows)->select();
         $total = Salesrecord::with("teacher,student")->where($searchPath)->where('sales_day','between',"{$start},{$end}")->count();
 
@@ -64,33 +68,74 @@ class SalesrecordController extends CommonController {
         $data['rows'] = $salesrecord;
         return json_encode($data);
     }
+
+
+
+    public function addsalesreord()
+    {
+        $campusid = session("loginSession")['campusid'];
+        $ordertype = Ordertype::where(["campusid" => $campusid])->select();
+        $coursetype = Coursetype::where(["campusid" => $campusid])->select();
+        $this->assign("ordertypes", $ordertype);
+        $this->assign("coursetypes", $coursetype);
+        return $this->fetch("salesrecord/add");
+    }
     /**
-     * 插入老师数据
-     * @return mixed
+     * 插入
      */
-    public function insert() {
-        //获取登陆的校长的校区id
-        $data = session("loginSession")['campusid'];
-        $registrationModel =Db::name("Teacher");
-        $validata = new TeacherValidate();
-        if($_POST['teacher_befulldate']=="")$_POST["teacher_befulldate"]=time();
-        if (!$validata->check($_POST)) {
+    public function insert()
+    {
+        $returnArr = $this->salesRecordValidCheck($_POST);
+        $errStrTotal=$returnArr['errStrTotal'];
+        $arr=$returnArr['arr'];
+        $registrationModel = Db::name("Salesrecord");
+        if ($errStrTotal!="") {
             $returnData['status'] = 0;
-            $returnData['msg'] = $validata->getError();
+            $returnData['msg'] =$errStrTotal;
             return json_encode($returnData);
-        } else if( count(Db::name("Teacher")->select())<5){
-            $_POST['campusid'] = $data;
-            $id = $registrationModel->insertGetId($_POST);
-            $b = sprintf("%06d", $id);
-            Db::name("user")->insert(["campusid" => $data, "username" => $b, "password" => $b, "typeid" => 2]);
+        } else {
+            $arr['sales_orderid']=$this->build_order_no($arr['sales_studentid']);
+            $registrationModel->insert($arr);
             $returnData['status'] = 1;
-            $returnData['msg'] = "<center><b style='color:blue;'>报名成功</b> <br/>账号密码为<b style='color:red;'>{$b}</b></center>";
+            $returnData['msg'] = "成功";
             return json_encode($returnData);
-		}else{
-			$returnData['status'] = 0;
-            $returnData['msg'] = "最多只能添加5位老师";
-			return json_encode($returnData);
-		}
+        }
+    }
+
+    /**
+     * 销售记录数据合法性检查
+     * @return mixed 包含错误信息和校验转换后的销售记录数据
+     */
+
+    public function salesRecordValidCheck($arr=[]){
+
+        //先查基本合法性
+        $validata = new SalesrecordValidate();
+        if(!$validata->check($arr))
+        {
+            $errStrTotal=$validata->getError();
+        }
+        else{
+            $errStrTotal="";
+        }
+        $campusid = session('loginSession')['campusid'];
+        //查输入的员工和学生在库里有没有
+        if( null != $a = Db::table("ew_teacher")->field("id")->where(["teacher_name"=>$arr["sales_teachername"],"campusid"=>$campusid])->select()){
+            $arr["sales_teacherid"]=$a[0]['id'];
+            unset($arr["sales_teachername"]);
+        }else{
+            $errStrTotal = '销售员工不存在;<br>';
+        }
+        if( null != $a = Db::table("ew_student")->field("id")->where(["student_name"=>$arr["sales_studentname"],"campusid"=>$campusid])->select()){
+            $arr["sales_studentid"]=$a[0]['id'];
+            unset($arr["sales_studentname"]);
+        }else{
+            $errStrTotal = $errStrTotal.'学员不存在;<br>';
+        }
+        $returnArr['errStrTotal']=$errStrTotal; //错误信息
+        $returnArr['arr']=$arr; //销售记录信息
+        return $returnArr;
+
     }
 
     /**
@@ -98,15 +143,16 @@ class SalesrecordController extends CommonController {
      * @return mixed
      */
     public function update() {
-
-        $registrationModel = Db::name("Teacher");
-        $validata = new TeacherValidate();
-        if (!$validata->check($_POST)) {
+        $returnArr = $this->salesRecordValidCheck($_POST);
+        $errStrTotal=$returnArr['errStrTotal'];
+        $arr=$returnArr['arr'];
+        $registrationModel = Db::name("Salesrecord");
+        if ($errStrTotal!="") {
             $returnData['status'] = 0;
-            $returnData['msg'] = $validata->getError();
+            $returnData['msg'] =$errStrTotal;
             return json_encode($returnData);
         } else {
-            $registrationModel->update($_POST);
+            $registrationModel->update($arr);
             $returnData['status'] = 1;
             $returnData['msg'] = "修改成功";
             return json_encode($returnData);
@@ -138,8 +184,8 @@ class SalesrecordController extends CommonController {
         $ordertype = Ordertype::where(["campusid" => $campusid])->select();
         $coursetype = Coursetype::where(["campusid" => $campusid])->select();
         $this->assign("salesrecord", $salesrecord);
-        //$this->assign("ordertype", $ordertype);
-        //$this->assign("coursetype", $coursetype);
+        $this->assign("ordertypes", $ordertype);
+        $this->assign("coursetypes", $coursetype);
         return $this->fetch('salesrecord/update');
     }
 
@@ -164,45 +210,56 @@ class SalesrecordController extends CommonController {
     public function export()
     {
         $campusid = session('loginSession')['campusid'];
+        $loginsession = session('loginSession');
         $campus = Campus::get($campusid);
-        $xlsName = $campus->campus_name . "校区老师信息汇总表";
+        $xlsName = $campus->campus_name . "校区销售记录表";
         $xlsCell = array(
-            array("teacher_name","姓名"),
-            array("teacher_gender","性别"),
-            array("teacher_idcard","身份证"),
-            array("teacher_bankaccount","银行卡号"),
-            array("teacher_jobtype","在职类型"),
-            array("grade_name","年级"),
-            array("subject_name","科目"),
-            array("teacher_telphone","电话"),
-            array("teacher_email","邮箱"),
-            array("teacher_qq","qq"),
-            array("teacher_joindate","入职日期"),
-            array("teacher_befulldate","转正日期"),
-            array("teacher_status","是否在职"),
-            array("teacher_remark","备注")
+            array("sales_orderid","销售单号"),
+            array("teacher_name","销售员工"),
+            array("sales_ordertypename","订单类型"),
+            array("sales_money","销售金额"),
+            array("student_name","学生姓名"),
+            array("sales_coursetypename","课程类型"),
+            array("sales_day","销售日期"),
             );
-        $join = [
-            ["ew_grade grade","teacher.teacher_grade_id = grade.id"],
-            ["ew_subject subject","teacher.teacher_subject_id = subject.id" ]
-        ];
-        $xlsData = Db::table('ew_teacher')->alias('teacher')->join($join)->order('teacher_joindate asc')->select();
-         for ($i = 0; $i < count($xlsData); $i++) {
-            if ($xlsData[$i]['teacher_gender'] == 0) {
-                $xlsData[$i]['teacher_gender'] = "男";
-            } else {
-                $xlsData[$i]['teacher_gender'] = "女";
-            }
-            if ($xlsData[$i]['teacher_jobtype'] == 0) {
-                $xlsData[$i]['teacher_jobtype'] = "兼职";
-            } else {
-                $xlsData[$i]['teacher_jobtype'] = "全职";
-            }
-            if($xlsData[$i]['teacher_status']==0){
-                $xlsData[$i]['teacher_status'] = "离职";
-            }else{
-                $xlsData[$i]['teacher_status'] = "在职";
-            }
+
+        //根据查询参数获取导出数据
+        if(empty($_GET['starttime'])){
+            $start = 0;
+            unset($_GET['starttime']);
+        }else{
+            $start = $_GET['starttime'];
+            unset($_GET['starttime']);
+        };
+        if(empty($_GET['endtime'])){
+            $end = '2100-12-31';
+            unset($_GET['endtime']);
+        }else{
+            $end = $_GET['endtime'];
+            unset($_GET['endtime']);
+        };
+        //过滤结束==============================
+        $path = $this->getDataByCampusid($_GET);
+        $searchPath = $this->searchNotLike($path,$_GET,'sales_ordertypename','sales_coursetypename');
+        if(isset($searchPath['campusid'])){
+            $searchPath['salesrecord.sales_campusid'] = $searchPath["campusid"];
+            unset($searchPath["campusid"]);
+        }
+        if(isset($searchPath['teacher_name'])){
+            $searchPath['teacher.teacher_name'] = $searchPath["teacher_name"];
+            unset($searchPath["teacher_name"]);
+        }
+        if(isset($searchPath['student_name'])){
+            $searchPath['student.student_name'] = $searchPath["student_name"];
+            unset($searchPath["student_name"]);
+        }
+        $xlsData = Salesrecord::with("teacher,student")->where($searchPath)->where('sales_day','between',"{$start},{$end}")->order("sales_day desc")->select();
+        for($i=0;$i<sizeof($xlsData);$i++)
+        {
+        $xlsData[$i]['teacher_name']=$xlsData[$i]['teacher']['teacher_name'];
+        unset($xlsData[$i]['teacher']['teacher_name']);
+        $xlsData[$i]['student_name']=$xlsData[$i]['student']['student_name'];
+        unset($xlsData[$i]['student']['student_name']);
         }
         $this->exportExcel($xlsName, $xlsCell, $xlsData);
     }

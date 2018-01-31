@@ -3,57 +3,65 @@
     <fieldset>
         <legend>基本信息</legend>
 
-    <div class="form-group">
-        <label class="col-sm-3 control-label">模板名称</label>
-        <div class="col-sm-5">
-            <input type="text" class="form-control" name="salarytemp_name" >
+        <div class="form-group">
+            <label class="col-sm-3 control-label">销售员工</label>
+            <div class="col-sm-5">
+                <input type="text" class="form-control" name="sales_teachername" >
+            </div>
         </div>
-    </div>
-    <div class="form-group">
-        <label class="col-sm-3 control-label">基本工资</label>
-        <div class="col-sm-5">
-            <input type="text" class="form-control" name="salarytemp_base" >
+        <div class="form-group">
+            <label class="col-sm-3 control-label">销售单类型</label>
+            <div class="col-sm-5">
+                <select class="form-control" name="sales_ordertypename" id="sales_ordertypename_id" style="border-radius:2px;" >
+                    {volist name="ordertypes" id="ordertype"}
+                    <option value='{$ordertype.order_typename}' >{$ordertype.order_typename}</option>
+                    {/volist}
+                </select>
+            </div>
         </div>
-    </div>
 
         <div class="form-group">
-            <label class="col-sm-3 control-label">岗位工资</label>
+            <label class="col-sm-3 control-label">销售金额</label>
             <div class="col-sm-5">
-                <input type="text" class="form-control" name="salarytemp_pos" >
+                <input type="text" class="form-control" name="sales_money" >
             </div>
         </div>
         <div class="form-group">
-            <label class="col-sm-3 control-label">通讯补贴</label>
+            <label class="col-sm-3 control-label">学生姓名</label>
             <div class="col-sm-5">
-                <input type="text" class="form-control" name="salarytemp_com" >
+                <input type="text" class="form-control" name="sales_studentname" >
             </div>
         </div>
         <div class="form-group">
-            <label class="col-sm-3 control-label">交通补贴</label>
+            <label class="col-sm-3 control-label">课程周期类型</label>
             <div class="col-sm-5">
-                <input type="text" class="form-control" name="salarytemp_trans" >
+                <select class="form-control" name="sales_coursetypename" id="sales_coursetypename_id" style="border-radius:2px;" >
+                    {volist name="coursetypes" id="coursetype"}
+                    <option value='{$coursetype.coursetype_name}'>{$coursetype.coursetype_name}</option>
+                    {/volist}
+                </select>
             </div>
         </div>
+
         <div class="form-group">
-            <label class="col-sm-3 control-label">餐补</label>
+            <label class="col-sm-3 control-label">销售日期</label>
             <div class="col-sm-5">
-                <input type="text" class="form-control" name="salarytemp_food" >
-            </div>
-        </div>
-        <div class="form-group">
-            <label class="col-sm-3 control-label">课时费</label>
-            <div class="col-sm-5">
-                <input type="text" class="form-control" name="salarytemp_classhour" >
-            </div>
-        </div>
-        <div class="form-group">
-            <label class="col-sm-3 control-label">新单提成比例(%)</label>
-            <div class="col-sm-5">
-                <input type="text" class="form-control" name="salarytemp_newbonus" >
+                <input type="text" class="form-control" id="salesday" name="sales_day" >
             </div>
         </div>
     </fieldset>
 </form>
 </div>
+
+<script>
+    $('#salesday').datepicker({
+        language: 'zh-CN',
+        format: "yyyy-mm-dd",
+        todayBtn: "linked",
+        autoclose: true,
+        todayHighlight: true,
+        clearBtn: true,
+    });
+</script>
 
 
