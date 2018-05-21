@@ -1,0 +1,94 @@
+<div>
+<form class="form-horizontal bv-form"  role="form"  id="addForm">
+    <fieldset>
+        <legend>基本信息</legend>
+
+        <div class="form-group">
+            <label class="col-sm-3 control-label">学生姓名</label>
+            <div class="col-sm-5">
+                <input type="text" class="form-control" name="clue_student_name" >
+            </div>
+        </div>
+        <div class="form-group">
+            <label class="col-sm-3 control-label">学生年龄</label>
+            <div class="col-sm-5">
+                <input type="text" class="form-control" name="clue_student_age" >
+            </div>
+        </div>
+        <div class="form-group">
+            <label class="col-sm-3 control-label">学生性别</label>
+            <div class="col-sm-5">
+                <select class="form-control" name="clue_student_sex" id="clue_student_sex_id" style="border-radius:2px;" >
+                    <option value='' >请选择</option>
+                    <option value='0' >女</option>
+                    <option value='1' >男</option>
+                </select>
+            </div>
+        </div>
+        <div class="form-group">
+            <label class="col-sm-3 control-label">联系电话</label>
+            <div class="col-sm-5">
+                <input type="text" class="form-control" name="clue_telephone" >
+            </div>
+        </div>
+        <div class="form-group">
+            <label class="col-sm-3 control-label">最后联系时间</label>
+            <div class="col-sm-5">
+                <input type="text" class="form-control" id="clue_last_time_id" name="clue_last_time" >
+            </div>
+        </div>
+        <div class="form-group">
+            <label class="col-sm-3 control-label">最后联系内容</label>
+            <div class="col-sm-5">
+                <input type="text" class="form-control" name="clue_last_content" >
+            </div>
+        </div>
+        <div class="form-group">
+        <label class="col-sm-3 control-label">下次联系时间</label>
+        <div class="col-sm-5">
+            <input type="text" class="form-control" id="clue_next_time_id" name="clue_next_time" >
+        </div>
+        </div>
+        <div class="form-group">
+            <label class="col-sm-3 control-label">线索状态</label>
+            <div class="col-sm-5">
+                <select class="form-control" name="clue_status" id="clue_status_id" style="border-radius:2px;" >
+                    <option value='' >请选择</option>
+                    <option value='0' >未确认</option>
+                    <option value='1' >有效</option>
+                    <option value='2' >无效</option>
+                </select>
+            </div>
+        </div>
+        <div class="form-group">
+            <label class="col-sm-3 control-label">咨询人员</label>
+            <div class="col-sm-5">
+                <input type="text" class="form-control" name="teacher_name" >
+            </div>
+        </div>
+
+    </fieldset>
+</form>
+</div>
+
+<script>
+    $('#clue_next_time_id').datepicker({
+        language: 'zh-CN',
+        format: "yyyy-mm-dd",
+        todayBtn: "linked",
+        autoclose: true,
+        todayHighlight: true,
+        clearBtn: true,
+    });
+
+    $('#clue_last_time_id').datepicker({
+        language: 'zh-CN',
+        format: "yyyy-mm-dd",
+        todayBtn: "linked",
+        autoclose: true,
+        todayHighlight: true,
+        clearBtn: true,
+    });
+</script>
+
+

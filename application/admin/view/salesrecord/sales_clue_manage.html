@@ -72,7 +72,7 @@
         </a>
         <ol class="breadcrumb pull-left">
             <li><a href="#">招生管理</a></li>
-            <li><a href="#">招生记录</a></li>
+            <li><a href="#">招生线索</a></li>
         </ol>
     </div>
 </div>
@@ -84,7 +84,7 @@
             <div class="box-header">
                 <div class="box-name">
                     <i class="fa "></i>
-                    <span>招生记录</span>
+                    <span>招生线索</span>
                 </div>
                 <div class="box-icons">
                     <a class="collapse-link">
@@ -122,7 +122,7 @@
                                         </button>
 
                                         <button class="btn btn-primary btn-sm"  id="edit">
-                                            <i class="fa fa-file-text"></i>&nbsp;修&nbsp;改
+                                            <i class="fa fa-file-text"></i>&nbsp;编&nbsp;辑
                                         </button>
 
 
@@ -151,7 +151,7 @@
                 <div class="panel panel-default" style="border: 1px solid #CCC;">
                     <div class="panel-heading" role="tab" id="headingTwo">
                         <h4 class="panel-title" data-toggle="collapse" data-target="#collapseForStudentTable">
-                            招生记录列表<span class="fa fa-chevron-down" style="float: right"></span>
+                            招生线索列表<span class="fa fa-chevron-down" style="float: right"></span>
                         </h4>
                     </div>
                     <div id="collapseForStudentTable" class="panel-collapse collapse in" role="tabpanel"
@@ -161,39 +161,44 @@
                             <!--TODO 待完善-->
                             <div class="searchClass">
                                 <div class="row rowstyle">
-                                    <div class="col-md-1"><b>销售单号</b></div>
-                                    <div class="col-md-2"><input class="SearchForm form-control" type="text" id="sales_orderid" style="width:140px;"/></div>
+                                    <div class="col-md-1"><b>线索状态</b></div>
+                                    <div class="col-md-2">
+                                        <select id="clue_status" style="width:140px;font-size: 13px;" class="SearchForm form-control"  >
+                                        </select>
+                                    </div>
 
-                                    <div class="col-md-1"><b>销售员工</b></div>
+                                    <div class="col-md-1"><b>咨询员工</b></div>
                                     <div class="col-md-2"> <input class="SearchForm form-control" type="text" id="teacher_name" style="width:140px;" /></div>
 
                                     <div class="col-md-1"><b>学生姓名</b></div>
-                                    <div class="col-md-2"><input class="SearchForm form-control" type="text" id="student_name" style="width:140px;"/></div>
-
-                                    <div class="col-md-1"><b>销售单类型</b></div>
-                                    <div class="col-md-2">
-                                        <select id="sales_ordertypename" style="width:140px;font-size: 13px;" class="SearchForm form-control"  >
-                                        </select>
-                                    </div>
+                                    <div class="col-md-2"><input class="SearchForm form-control" type="text" id="clue_student_name" style="width:140px;"/></div>
 
                                 </div>
                                 <div class="row rowstyle">
-                                    <div class="col-md-1"><b>课程周期类型</b></div>
-                                    <div class="col-md-2">
-                                        <select id="sales_coursetypename" style="width:140px;font-size: 13px;" class="SearchForm form-control"  >
-                                        </select>
-                                    </div>
 
-                                    <div class="col-md-1"><b>起始日期</b></div>
+                                    <div class="col-md-1"><b>最后联系起始日期</b></div>
                                     <div class='col-md-2'>
 
                                         <input style="width:140px;" type="text" style="height:32px;width:140px;" class="SearchForm form-control" name="salesrecord_starttime"  id="starttime" >
                                     </div>
 
-                                    <div class="col-md-1"><b>终止日期</b></div>
+                                    <div class="col-md-1"><b>最后联系终止日期</b></div>
                                     <div class='col-md-2'>
 
                                         <input style="width:140px;" type="text" style="height:32px;width:140px;" class="SearchForm form-control" name="salesrecord_endtime"  id="endtime" >
+                                    </div>
+
+
+                                    <div class="col-md-1"><b>下次联系起始日期</b></div>
+                                    <div class='col-md-2'>
+
+                                        <input style="width:140px;" type="text" style="height:32px;width:140px;" class="SearchForm form-control" name="salesrecord_starttime"  id="starttime2" >
+                                    </div>
+
+                                    <div class="col-md-1"><b>下次联系终止日期</b></div>
+                                    <div class='col-md-2'>
+
+                                        <input style="width:140px;" type="text" style="height:32px;width:140px;" class="SearchForm form-control" name="salesrecord_endtime"  id="endtime2" >
                                     </div>
                                 </div>
                                 <div class="row rowstyle"></div>
@@ -207,7 +212,7 @@
                             </div>
                         </div>
                         <!--信息表 S-->
-                        <table id="datatable_salesrecord" data-size="15" style="width: 100%">
+                        <table id="datatable_salesclue" data-size="15" style="width: 100%">
                         </table>
                         <!--信息表 E-->
                     </div>
@@ -218,7 +223,7 @@
     </div>
 </div>
 <script type="text/javascript" src="static/plugins/AjaxUpload/Scirpt/ajaxupload.js"></script>
-<script type="text/javascript" src="static/js/ajax/salesrecordmanage.js"></script>
+<script type="text/javascript" src="static/js/ajax/salescluemanage.js"></script>
 <script>
     //清空搜索条件
     $("#Reset").click(function() {

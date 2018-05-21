@@ -199,7 +199,17 @@ class AjaxController extends CommonController {
 
 
     /**
-     * 薪资模板管理
+     * 招生线索
+     * @return mixed
+     */
+    public function sales_clue() {
+        $campusid = session("loginSession")['campusid'];
+        $this->assign("campusid", $campusid);
+        return $this->fetch('salesrecord/sales_clue_manage');
+    }
+
+    /**
+     * 招生记录管理
      * @return mixed
      */
     public function salesrecord_manage() {

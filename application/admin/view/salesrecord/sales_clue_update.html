@@ -1,0 +1,59 @@
+<div>
+<form class="form-horizontal bv-form"  role="form"  id="updateForm">
+    <input type="hidden" id="id" name="sales_orderid" value="{$salesrecord.sales_orderid}">
+    <fieldset>
+        <legend>订单信息 {$salesrecord.sales_orderid}</legend>
+
+
+    <div class="form-group">
+        <label class="col-sm-3 control-label">销售员工</label>
+        <div class="col-sm-5">
+            <input type="text" class="form-control" name="sales_teachername" value="{$salesrecord.teacher.teacher_name}">
+        </div>
+    </div>
+        <div class="form-group">
+            <label class="col-sm-3 control-label">销售单类型</label>
+            <div class="col-sm-5">
+                <select class="form-control" name="sales_ordertypename" id="sales_ordertypename_id" style="border-radius:2px;" >
+                    {volist name="ordertypes" id="ordertype"}
+                    <option value='{$ordertype.order_typename}' {if $salesrecord.sales_ordertypename==$ordertype.order_typename}selected{/if}>{$ordertype.order_typename}</option>
+                    {/volist}
+                </select>
+            </div>
+        </div>
+
+        <div class="form-group">
+            <label class="col-sm-3 control-label">销售金额</label>
+            <div class="col-sm-5">
+                <input type="text" class="form-control" name="sales_money" value="{$salesrecord.sales_money}">
+            </div>
+        </div>
+        <div class="form-group">
+            <label class="col-sm-3 control-label">学生姓名</label>
+            <div class="col-sm-5">
+                <input type="text" class="form-control" name="sales_studentname" value="{$salesrecord.student.student_name}">
+            </div>
+        </div>
+        <div class="form-group">
+            <label class="col-sm-3 control-label">课程周期类型</label>
+            <div class="col-sm-5">
+                <select class="form-control" name="sales_coursetypename" id="sales_coursetypename_id" style="border-radius:2px;" >
+                    {volist name="coursetypes" id="coursetype"}
+                    <option value='{$coursetype.coursetype_name}' {if $salesrecord.sales_coursetypename==$coursetype.coursetype_name}selected{/if}>{$coursetype.coursetype_name}</option>
+                    {/volist}
+                </select>
+            </div>
+        </div>
+
+        <div class="form-group">
+            <label class="col-sm-3 control-label">销售日期</label>
+            <div class="col-sm-5">
+                <input type="text" class="form-control" name="sales_day" value="{$salesrecord.sales_day}">
+            </div>
+        </div>
+
+    </fieldset>
+</form>
+</div>
+
+
