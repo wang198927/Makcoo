@@ -123,7 +123,7 @@ class SalesclueController extends CommonController {
             $errStrTotal="";
         }
         $campusid = session('loginSession')['campusid'];
-        //查输入的员工和学生在库里有没有
+        //查输入的员工在库里有没有
         if( null != $a = Db::table("ew_teacher")->field("id")->where(["teacher_name"=>$arr["teacher_name"],"campusid"=>$campusid])->select()){
             $arr["clue_teacher_id"]=$a[0]['id'];
             unset($arr["teacher_name"]);
@@ -141,10 +141,10 @@ class SalesclueController extends CommonController {
      * @return mixed
      */
     public function update() {
-        $returnArr = $this->salesRecordValidCheck($_POST);
+        $returnArr = $this->salesClueValidCheck($_POST);
         $errStrTotal=$returnArr['errStrTotal'];
         $arr=$returnArr['arr'];
-        $registrationModel = Db::name("Salesrecord");
+        $registrationModel = Db::name("Salesclue");
         if ($errStrTotal!="") {
             $returnData['status'] = 0;
             $returnData['msg'] =$errStrTotal;
@@ -157,44 +157,27 @@ class SalesclueController extends CommonController {
         }
     }
 
-    /**
-     * 根据ID获得教师信息json数据
-     */
-    public function getTeacherById() {
-        $teacher_id = input('teacher_id', '');
-        $where = array();
-        if (isNotNull($teacher_id)) {
-            $where['id'] = $teacher_id;
-        }
-        $teachers = Teacher::where($where)->limit(1)->find();
-
-        return json_encode($teachers);
-    }
 
     /**
      * 	修改页面的显示
      */
     public function updatemodal() {
         $campusid = session("loginSession")['campusid'];
-        $sales_orderid = input('sales_orderid');
+        $clue_id = input('id');
         //获取要修改的老师信息
-        $salesrecord= Salesrecord::with("teacher,student")->where(["sales_orderid" => $sales_orderid])->find();
-        $ordertype = Ordertype::where(["campusid" => $campusid])->select();
-        $coursetype = Coursetype::where(["campusid" => $campusid])->select();
-        $this->assign("salesrecord", $salesrecord);
-        $this->assign("ordertypes", $ordertype);
-        $this->assign("coursetypes", $coursetype);
-        return $this->fetch('salesrecord/update');
+        $salesclue= Salesclue::with("teacher")->where(["clue_id" => $clue_id])->find();
+        $this->assign("salesclue", $salesclue);
+        return $this->fetch('salesrecord/sales_clue_update');
     }
 
     /**
-     * 删除老师信息
+     * 删除线索信息
      */
     public function deleteByIDs() {
         $ids = input('ids');
         $ids = rtrim($ids, ",");
-        $map['sales_orderid'] = array('in', $ids);
-        $deleteinfo = Salesrecord::where($map)->delete();
+        $map['clue_id'] = array('in', $ids);
+        $deleteinfo = Salesclue::where($map)->delete();
         if ($deleteinfo) {
             return json_encode(array("status" => 1, "msg" => "删除成功！"));
         } else {
@@ -208,17 +191,18 @@ class SalesclueController extends CommonController {
     public function export()
     {
         $campusid = session('loginSession')['campusid'];
-        $loginsession = session('loginSession');
         $campus = Campus::get($campusid);
-        $xlsName = $campus->campus_name . "校区销售记录表";
+        $xlsName = $campus->campus_name . "招生线索表";
         $xlsCell = array(
-            array("sales_orderid","销售单号"),
-            array("teacher_name","销售员工"),
-            array("sales_ordertypename","订单类型"),
-            array("sales_money","销售金额"),
-            array("student_name","学生姓名"),
-            array("sales_coursetypename","课程类型"),
-            array("sales_day","销售日期"),
+            array("clue_student_name","学生姓名"),
+            array("clue_student_age","学生年龄"),
+            array("clue_student_sex","学生性别"),
+            array("clue_telephone","联系电话"),
+            array("clue_last_time","最后联系时间"),
+            array("clue_last_content","最后联系内容"),
+            array("clue_next_time","下次联系时间"),
+            array("clue_status","线索状态"),
+            array("teacher_name","咨询人员"),
             );
 
         //根据查询参数获取导出数据
@@ -236,28 +220,48 @@ class SalesclueController extends CommonController {
             $end = $_GET['endtime'];
             unset($_GET['endtime']);
         };
+        if(empty($_GET['starttime2'])){
+            $start2 = 0;
+            unset($_GET['starttime2']);
+        }else{
+            $start2 = $_GET['starttime2'];
+            unset($_GET['starttime2']);
+        };
+        if(empty($_GET['endtime2'])){
+            $end2 = '2100-12-31';
+            unset($_GET['endtime2']);
+        }else{
+            $end2 = $_GET['endtime2'];
+            unset($_GET['endtime2']);
+        };
         //过滤结束==============================
         $path = $this->getDataByCampusid($_GET);
-        $searchPath = $this->searchNotLike($path,$_GET,'sales_ordertypename','sales_coursetypename');
+        $searchPath = $this->searchNotLike($path,$_GET,'clue_status');
         if(isset($searchPath['campusid'])){
-            $searchPath['salesrecord.sales_campusid'] = $searchPath["campusid"];
+            $searchPath['clue_campusid'] = $searchPath["campusid"];
             unset($searchPath["campusid"]);
         }
         if(isset($searchPath['teacher_name'])){
             $searchPath['teacher.teacher_name'] = $searchPath["teacher_name"];
             unset($searchPath["teacher_name"]);
         }
-        if(isset($searchPath['student_name'])){
-            $searchPath['student.student_name'] = $searchPath["student_name"];
-            unset($searchPath["student_name"]);
-        }
-        $xlsData = Salesrecord::with("teacher,student")->where($searchPath)->where('sales_day','between',"{$start},{$end}")->order("sales_day desc")->select();
+        $xlsData = Salesclue::with("teacher")->where($searchPath)->where('clue_last_time','between',"{$start},{$end}")->where('clue_next_time','between',"{$start2},{$end2}")->order("clue_next_time desc")->select();
         for($i=0;$i<sizeof($xlsData);$i++)
         {
-        $xlsData[$i]['teacher_name']=$xlsData[$i]['teacher']['teacher_name'];
-        unset($xlsData[$i]['teacher']['teacher_name']);
-        $xlsData[$i]['student_name']=$xlsData[$i]['student']['student_name'];
-        unset($xlsData[$i]['student']['student_name']);
+            $xlsData[$i]['teacher_name']=$xlsData[$i]['teacher']['teacher_name'];
+            unset($xlsData[$i]['teacher']['teacher_name']);
+            if($xlsData[$i]['clue_student_sex']=='0'){
+                $xlsData[$i]['clue_student_sex']='女';
+            }else{
+                $xlsData[$i]['clue_student_sex']='男';
+            }
+            if($xlsData[$i]['clue_status']=='0'){
+                $xlsData[$i]['clue_status']='未确认';
+            }else if ($xlsData[$i]['clue_status']=='1'){
+                $xlsData[$i]['clue_status']='有效';
+            }else{
+                $xlsData[$i]['clue_status']='无效';
+            }
         }
         $this->exportExcel($xlsName, $xlsCell, $xlsData);
     }
@@ -278,78 +282,69 @@ class SalesclueController extends CommonController {
         for($i=2;$i<count($array)+1;$i++){
             foreach($array[$i] as $k=>$v){
                 if($k==0){
-                    $array[$i]['sales_teacherid'] = $v;
+                    $array[$i]['clue_student_name'] = $v;
                     unset($array[$i][$k]);
                 }
                 if($k==1){
-                    $array[$i]['sales_ordertypename'] = $v;
+                    $array[$i]['clue_student_age'] = $v;
                     unset($array[$i][$k]);
                 }
                 if($k==2){
-                    $array[$i]['sales_money'] = $v;
+                    $array[$i]['clue_student_sex'] = $v;
                     unset($array[$i][$k]);
                 }
                 if($k==3){
-                    $array[$i]['sales_studentid'] = $v;
+                    $array[$i]['clue_telephone'] = $v;
                     unset($array[$i][$k]);
                 }
                 if($k==4){
-                    $array[$i]['sales_coursetypename'] = $v;
+                    $array[$i]['clue_last_time'] = $v;
                     unset($array[$i][$k]);
                 }
                 if($k==5){
-                    $array[$i]['sales_day'] = $v;
+                    $array[$i]['clue_last_content'] = $v;
                     unset($array[$i][$k]);
                 }
-                /*if($k==6){
-                    $array[$i]['teacher_subject_id'] = $v;
+                if($k==6){
+                    $array[$i]['clue_next_time'] = $v;
                     unset($array[$i][$k]);
                 }
                 if($k==7){
-                    $array[$i]['teacher_telphone'] = $v;
+                    $array[$i]['clue_status'] = $v;
                     unset($array[$i][$k]);
                 }
                 if($k==8){
-                    $array[$i]['teacher_email'] = $v;
+                    $array[$i]['teacher_name'] = $v;
                     unset($array[$i][$k]);
                 }
-                if($k==9){
-                    $array[$i]['teacher_qq'] = $v;
-                    unset($array[$i][$k]);
-                }*/
-                $array[$i]['sales_campusid'] = $campusid;
+                $array[$i]['clue_campusid'] = $campusid;
             }
            $arr[$i-2]=$array[$i];
            
         }
          for($i=0;$i<count($arr);$i++){
-                $errStr='第'.$i.'行数据';
-                if( null != $a = Db::table("ew_teacher")->field("id")->where(["teacher_name"=>$arr[$i]["sales_teacherid"],"campusid"=>$campusid])->select()){
-                    $arr[$i]["sales_teacherid"]=$a[0]['id'];
-                }else{
-                    $errStrTotal = $errStrTotal.$errStr.'销售员工不存在\n';
-/*                    return $errStr.'销售员工不存在';*/
-                }
-                if( null != $a = Db::table("ew_student")->field("id")->where(["student_name"=>$arr[$i]["sales_studentid"],"campusid"=>$campusid])->select()){
-                    $arr[$i]["sales_studentid"]=$a[0]['id'];
-                }else{
-                    $errStrTotal = $errStrTotal.$errStr.'学员不存在\n';
-                   // return $errStr.'学员不存在';
-                }
-                if( null != $a = Db::table("ew_ordertype")->field("order_typename")->where(["order_typename"=>$arr[$i]["sales_ordertypename"],"campusid"=>$campusid])->select()){
-                     $arr[$i]["sales_ordertypename"]=$a[0]['order_typename'];
-                 }else{
-                    $errStrTotal = $errStrTotal.$errStr.'销售单类型不存在\n';
-                     //return $errStr.'销售单类型不存在';
-                 }
-                 if( null != $a = Db::table("ew_coursetype")->field("coursetype_name")->where(["coursetype_name"=>$arr[$i]["sales_coursetypename"],"campusid"=>$campusid])->select()){
-                     $arr[$i]["sales_coursetypename"]=$a[0]['coursetype_name'];
-                 }else{
-                     $errStrTotal = $errStrTotal.$errStr.'销售课程周期类型不存在\n';
-                     //return $errStr.'销售课程周期类型不存在';
-                 }
-             $arr[$i]["sales_orderid"]=$this->build_order_no($arr[$i]["sales_teacherid"]);
-
+             $errStr='第'.$i.'行数据';
+             $returnArr = $this->salesClueValidCheck($arr[$i]);
+             $arr[$i] = $returnArr['arr'];
+             if($returnArr['errStrTotal']!='') {
+                 $errStrTotal = $errStrTotal.$errStr.$returnArr['errStrTotal'];
+             }
+             if($arr[$i]['clue_student_sex']=='女'){
+                 $arr[$i]['clue_student_sex']='0';
+             }else if ($arr[$i]['clue_student_sex']=='男'){
+                 $arr[$i]['clue_student_sex']='1';
+             }else{
+                 $errStrTotal = $errStrTotal.$errStr."学生性别错误";
+             }
+             if($arr[$i]['clue_status']=='未确认'){
+                 $arr[$i]['clue_status']='0';
+             }else if ($arr[$i]['clue_status']=='有效'){
+                 $arr[$i]['clue_status']='1';
+             }else if ($arr[$i]['clue_status']=='无效'){
+                 $arr[$i]['clue_status']='2';
+             }else{
+                 $errStrTotal = $errStrTotal.$errStr."线索状态错误";
+             }
         }
 
         if($errStrTotal!='')
@@ -358,7 +353,7 @@ class SalesclueController extends CommonController {
         }
        
         for($k=0;$k<count($arr);$k++){
-            M("Salesrecord")->insertGetId($arr[$k]);
+            M("Salesclue")->insertGetId($arr[$k]);
 
         }
         

@@ -77,7 +77,7 @@ $(function() {
     $('#datatable_salesclue').datagrid({
         singleSelect: false, //允许选择多行
         striped: true,
-        idField: 'id',
+        idField: 'clue_id',
         remoteSort: false,
         collapsible: true,
         fit: false,
@@ -259,7 +259,7 @@ $(function() {
         var content = "";
         $.ajax({
             url: 'admin/Salesclue/updatemodal',
-            data: "sales_orderid=" + rows[0].sales_orderid,
+            data: "id=" + rows[0].clue_id,
             dataType: "HTML", //返回数据类型
             type: 'POST',
             success: function(updatemodalhtml) {
@@ -268,7 +268,7 @@ $(function() {
                 $.TeachDialog({
                     modalId: null,
                     animation: null,
-                    title: '订单信息',
+                    title: '线索信息',
                     content: content,
                     showCloseButton: true,
                     showCloseButtonName: '关闭',
@@ -291,7 +291,7 @@ $(function() {
                     },
                     clickButton: function(sender, modal, index) {
                         $.ajax({
-                            url: 'admin/Salesrecord/update',
+                            url: 'admin/Salesclue/update',
                             data: $("#updateForm").serialize(),
                             type: 'POST',
                             dataType: 'JSON',
@@ -341,7 +341,7 @@ $(function() {
         var idsdata = "";
         var selectedstr = "";
         for (var i = 0; i < rows.length; i++) {
-            idsdata += rows[i].sales_orderid + ",";
+            idsdata += rows[i].clue_id + ",";
         }
         idsdata = idsdata.substring(0, idsdata.length - 1);
         //selectedstr = selectedstr.substring(0, selectedstr.length - 1);
@@ -354,7 +354,7 @@ $(function() {
             clickButton: function(sender, modal, index) {
                 modal.modal('hide');
                 $.ajax({
-                    url: 'Admin/Salesrecord/deleteByIDs', //form action
+                    url: 'Admin/Salesclue/deleteByIDs', //form action
                     dataType: 'JSON', //返回体类型
                     type: 'POST', // form type
                     data: "ids=" + idsdata, //  请求参数
@@ -391,7 +391,7 @@ $(function() {
     var uploadOption =
             {
                 // 提交url
-                action: "admin/salesrecord/import",
+                action: "admin/salesclue/import",
                 // 服务端接收的名称
                 name: "Filedata",
                 // 自动提交
@@ -551,9 +551,9 @@ $(function() {
     {
         var searchParams = getSearchParams();
 
-        window.location.href = "admin/salesrecord/export?sales_orderid="+searchParams['sales_orderid']+"&teacher_name="+searchParams['teacher_name']
-            +"&student_name="+searchParams['student_name']+"&sales_ordertypename="+searchParams['sales_ordertypename']+"&sales_coursetypename="+searchParams['sales_coursetypename']
-            +"&starttime="+searchParams['starttime']+"&endtime="+searchParams['endtime'];
+        window.location.href = "admin/salesclue/export?clue_status="+searchParams['clue_status']+"&teacher_name="+searchParams['teacher_name']
+            +"&clue_student_name="+searchParams['clue_student_name']+"&starttime="+searchParams['starttime']+"&starttime2="+searchParams['starttime2']
+            +"&endtime="+searchParams['endtime']+"&endtime2="+searchParams['endtime2'];
     });
 
 });
