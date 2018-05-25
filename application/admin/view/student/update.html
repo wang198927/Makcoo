@@ -20,29 +20,13 @@
             <input type="text" class="form-control" id="phone" name="student_phone" value="{$student.student_phone}" style="width:200px;">
         </div>
 	</div>	
-	<div class="form-group">
-        <label class="col-sm-3 control-label">身份证</label>
-        <div class="col-sm-5">
-            <input type="text" class="form-control" id="idcard" name="student_idcard" value="{$student.student_idcard}" style="width:200px;" >
-        </div>
-    </div>
+
     <div class="form-group">
         <label class="col-sm-3 control-label">就读学校</label>
         <div class="col-sm-5">
             <input type="text" class="form-control" id="school" name="student_school" value="{$student.student_school}" style="width:200px;" >
         </div>
 	</div>	
-	<div class="form-group">	
-        <label class="col-sm-3 control-label">学校年级</label>
-        <div class="col-sm-5">
-			 <select class="form-control" id="select_gradeid" name="student_gradeid" style="height:33px;width:200px;border-radius:2px;" >
-                {volist name="grades" id="grade"}
-                <option value="{$grade.id}" {if $student.student_gradeid == $grade.id} selected {/if}>{$grade.grade_name}</option>
-                {/volist}
-            </select>
-          
-        </div>
-    </div>
 
     <div class="form-group">
         <label class="col-sm-3 control-label">选择课程</label>
@@ -65,18 +49,24 @@
         </div>
     </div>
     <div class="form-group">
+        <label class="col-sm-3 control-label">协议单号</label>
+        <div class="col-sm-5">
+            <input type="text" class="form-control" id="salesorderid" name="student_salesorderid" value="{$student.student_salesorderid}" style="width:200px;" >
+        </div>
+    </div>
+    <div class="form-group">
         <label class="col-sm-3 control-label">报名日期</label>
         <div class="col-sm-5">
-            <input type="text" readonly class="form-control" id="createtime_update" name="student_createtime" value="{$student.student_createtime}"  style="width:200px;" >
+            <input type="text" class="form-control" id="createtime_update" name="student_createtime" value="{$student.student_createtime}"  style="width:200px;" >
         </div>
     </div>
-	<div class="form-group">	
-        <label class="col-sm-3 control-label">支付宝账号</label>
+    <div class="form-group">
+        <label class="col-sm-3 control-label">到期日期</label>
         <div class="col-sm-5">
-            <input type="text" class="form-control" id="cardnum" name="student_cardnum" data-toggle="tooltip"
-                   data-placement="bottom" title="Tooltip for name" value="{$student.student_cardnum}" style="width:200px;" >
+            <input type="text" class="form-control" id="endtime_update" name="student_endtime" value="{$student.student_endtime}"  style="width:200px;" >
         </div>
     </div>
+
     <div class="form-group">
         <label class="col-sm-3 control-label">备注</label>
         <div class="col-sm-5">
@@ -87,6 +77,15 @@
 </form>
 <script>
     $('#createtime_update').datepicker({
+        language: 'zh-CN',
+        format : "yyyy-mm-dd",
+        todayBtn : "linked",
+        autoclose : true,
+        todayHighlight : true,
+        clearBtn : true
+    });
+    $('#endtime_update').datepicker({
+        language: 'zh-CN',
         format : "yyyy-mm-dd",
         todayBtn : "linked",
         autoclose : true,
@@ -96,12 +95,8 @@
     //选定班级，即选定课程
     $('#select_classid').change(function(){
         var classid = $('#select_classid').val();
-        if(classid == '' && $('#select_gradeid').val() == ''){
+        if(classid == '' ){
             getCourseJSON();
-            return;
-        }
-        if(classid == '' && $('#select_gradeid').val() != ''){
-            $('#select_gradeid').trigger('change');
             return;
         }
         $.ajax({
@@ -136,6 +131,7 @@
         });
     });
     //选中年级，返回此年级的课程选项
+    /*
     $('#select_gradeid').change(function(){
         var gradeid = $('#select_gradeid').val();
         if(gradeid == ''){
@@ -159,6 +155,7 @@
             }
         });
     });
+    */
 </script>
 
 

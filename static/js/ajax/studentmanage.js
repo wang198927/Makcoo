@@ -86,27 +86,11 @@ $(function() {
                     width: cellwidth,
                     sortable: true,
                 }, {
-                    field: 'student_idcard',
-                    title: '身份证号',
-                    align: 'center',
-                    width: cellwidth,
-                    sortable: true,
-                }, {
                     field: 'student_school',
                     title: '就读学校',
                     align: 'center',
                     width: cellwidth,
                     sortable: true
-                }, {
-                    field: 'grade',
-                    title: '年级',
-                    align: 'center',
-                    width: cellwidth,
-                    sortable: true,
-                    formatter: function(value) {
-                        return value.grade_name;
-                    }
-
                 },
                 {
                     field: 'classes',
@@ -139,8 +123,8 @@ $(function() {
                         return value.course_name;
                     }
                 }, {
-                    field: 'student_cardnum',
-                    title: '支付宝账号',
+                    field: 'student_salesorderid',
+                    title: '协议单号',
                     align: 'center',
                     width: cellwidth,
                     sortable: true
@@ -150,7 +134,13 @@ $(function() {
                     align: 'center',
                     width: cellwidth,
                     sortable: true
-                }, {
+                },  {
+                    field: 'student_endtime',
+                    title: '到期日期',
+                    align: 'center',
+                    width: cellwidth,
+                    sortable: true
+                },{
                     field: 'student_status',
                     title: '状态',
                     align: 'center',

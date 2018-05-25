@@ -14,11 +14,11 @@ class StudentValidate extends Validate
     protected $rule = [
         'student_name' => 'require|max:20',
         'student_phone' => 'require|max:11|min:11|checkphone:1',
-        'student_idcard' => 'max:18|min:18',
-        'student_gradeid' => 'require',
         'student_classid' => 'require',
         'student_courseid' => 'require',
         'student_createtime' => 'require',
+        'student_endtime' => 'require',
+        'student_salesorderid' => 'require',
         'student_sex' => 'require',
     ];
     protected $message = [
@@ -29,12 +29,11 @@ class StudentValidate extends Validate
         'student_phone.min' => '电话最低不能少于11位',
         'student_phone.checkphone' => '请填写正确的手机号码格式',
         'student_createtime.require' => '请填写报名日期',
+        'student_endtime.require' => '请填写到期日期',
+        'student_salesorderid.require' => '请填写协议单号',
         'student_sex.require' => '请选择性别',
-        'student_gradeid.require' => '请选择年级',
         'student_classid.require' => '请选择班级',
         'student_courseid.require' => '请选择课程',
-        'student_idcard.max' => '身份证最多不能超过18位',
-        'student_idcard.min' => '身份证最多不能低于18位'
     ];
     protected function checkphone($value,$rule)
     {

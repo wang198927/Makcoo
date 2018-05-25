@@ -159,24 +159,27 @@
                                         <input class="SearchForm form-control" type="text" name="student_phone" style="width:140px;font-size: 13px;" />
                                     </div>
 
-                                    <div class="col-md-1"><b>身份证</b></div>
-                                    <div class='col-md-2'>
-                                        <input class="SearchForm form-control" type="text" name="student_idcard" style="width:140px;font-size: 13px;" />
-                                    </div>
-                                </div>
-                                <div class="row rowstyle">
                                     <div class="col-md-1"><b>就读学校</b></div>
                                     <div class='col-md-2'>
                                         <input class="SearchForm form-control" type="text" name="student_school" style="width:140px;font-size: 13px;" />
                                     </div>
+                                </div>
+                                <div class="row rowstyle">
 
-                                    <div class="col-md-1"><b>年级</b></div>
+                                    <div class="col-md-1"><b>性别</b></div>
                                     <div class='col-md-2'>
-                                        <select name="student_gradeid" style="width:140px;font-size: 13px;" class="SearchForm form-control"  >
+                                        <label class="radio-inline"><input type="radio" name="student_sex" value="0">男</label>&nbsp;&nbsp;
+                                        <label class="radio-inline"><input type="radio" name="student_sex" value="1">女</label>
+                                    </div>
 
-                                            <option value="">选择年级</option>
-                                            {volist name='Grade' id='Grad'}
-                                            <option value="{$Grad.id}">{$Grad.grade_name}</option>
+                                    <div class="col-md-1"><b>课程</b></div>
+                                    <div class='col-md-2'>
+
+                                        <select name="student_courseid" style="width:140px;font-size: 13px;" class="SearchForm form-control">
+
+                                            <option value="">选择课程</option>
+                                            {volist name='Course' id='Cours'}
+                                            <option value="{$Cours.id}">{$Cours.course_name}</option>
                                             {/volist}
 
                                         </select>
@@ -194,42 +197,31 @@
                                         </select>
                                     </div>
 
-                                    <div class="col-md-1"><b>性别</b></div>
-                                    <div class='col-md-2'>
-                                        <label class="radio-inline"><input type="radio" name="student_sex" value="0">男</label>&nbsp;&nbsp;
-                                        <label class="radio-inline"><input type="radio" name="student_sex" value="1">女</label>
-                                    </div>
                                 </div>
 
                                 <div class="row rowstyle">
-                                    <div class="col-md-1"><b>课程</b></div>
+
+                                    <div class="col-md-1"><b>报名日期起始</b></div>
                                     <div class='col-md-2'>
 
-                                        <select name="student_courseid" style="width:140px;font-size: 13px;" class="SearchForm form-control">
-
-                                            <option value="">选择课程</option>
-                                            {volist name='Course' id='Cours'}
-                                            <option value="{$Cours.id}">{$Cours.course_name}</option>
-                                            {/volist}
-
-                                        </select>
+                                        <input style="width:140px;" type="text" style="height:32px;width:140px;" class="SearchForm form-control" name="student_createtime1"  id="time1" >
                                     </div>
-
-                                    <div class="col-md-1"><b>支付宝</b></div>
-                                    <div class='col-md-2'>
-                                        <input class="SearchForm form-control" type="text" name="student_cardnum" style="width:140px;" />
-                                    </div>
-
-                                    <div class="col-md-1"><b>报名日期</b></div>
+                                    <div class="col-md-1"><b>报名日期终止</b></div>
                                     <div class='col-md-2'>
 
-                                        <input style="width:140px;" type="text" style="height:32px;width:140px;" class="SearchForm form-control" name="student_createtime"  readonly id="createtime" >
+                                        <input style="width:140px;" type="text" style="height:32px;width:140px;" class="SearchForm form-control" name="student_endtime1"  id="time2" >
+                                    </div>
+                                    <div class="col-md-1"><b>到期日期起始</b></div>
+                                    <div class='col-md-2'>
+
+                                        <input style="width:140px;" type="text" style="height:32px;width:140px;" class="SearchForm form-control" name="student_createtime2"  id="time3" >
+                                    </div>
+                                    <div class="col-md-1"><b>到期日期终止</b></div>
+                                    <div class='col-md-2'>
+
+                                        <input style="width:140px;" type="text" style="height:32px;width:140px;" class="SearchForm form-control" name="student_endtime2"  id="time4" >
                                     </div>
 
-                                    <div class="col-md-1"><b>备 注</b></div>
-                                    <div class='col-md-2'>
-                                        <input class="SearchForm form-control" type="text" name="student_remark" style="width:140px;"/>
-                                    </div>
                                 </div>
                             </div>
                             <br/>
@@ -254,7 +246,8 @@
     </div>
 </div>
 <script>
-    $('#createtime').datepicker({
+
+    $('#time1').datepicker({
         language: 'zh-CN',
         format: "yyyy-mm-dd",
         todayBtn: "linked",
@@ -262,6 +255,32 @@
         todayHighlight: true,
         clearBtn: true,
     });
+    $('#time2').datepicker({
+        language: 'zh-CN',
+        format: "yyyy-mm-dd",
+        todayBtn: "linked",
+        autoclose: true,
+        todayHighlight: true,
+        clearBtn: true,
+    });
+    $('#time3').datepicker({
+        language: 'zh-CN',
+        format: "yyyy-mm-dd",
+        todayBtn: "linked",
+        autoclose: true,
+        todayHighlight: true,
+        clearBtn: true,
+    });
+    $('#time4').datepicker({
+        language: 'zh-CN',
+        format: "yyyy-mm-dd",
+        todayBtn: "linked",
+        autoclose: true,
+        todayHighlight: true,
+        clearBtn: true,
+    });
+
+
 </script>
 <script type="text/javascript" src="static/plugins/AjaxUpload/Scirpt/ajaxupload.js"></script>
 <script type="text/javascript" src="static/js/ajax/studentmanage.js"></script>

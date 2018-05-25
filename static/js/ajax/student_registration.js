@@ -94,7 +94,6 @@ $(function () {
      */
     getCourseJSON();
     getClassJSON();
-	getGradeJSON();
 
     /**
      * 提交学生报名信息
@@ -121,7 +120,6 @@ $(function () {
                             document.getElementById('studentForm').reset();
                             getCourseJSON();
                             getClassJSON();
-                            getGradeJSON();
                         },
                         otherButtons: ['去往管理页'],
                         otherButtonStyles: ['btn-primary'],

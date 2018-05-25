@@ -110,21 +110,20 @@ class StudentController extends CommonController {
             $returnData['status'] = 0;
             $returnData['msg'] = $validata->getError();
             return json_encode($returnData);
-        } else if(count(Db::name("Student")->select())<100){
-            $count = Db::table('ew_student')->where('campusid',$data)->where('student_gradeid', $_POST['student_gradeid'])->where('student_classid', $_POST['student_classid'])->count();
-            $res = date('Y') . str_pad($_POST['student_gradeid'], 2, 0, STR_PAD_LEFT) . str_pad($_POST['student_classid'], 2, 0, STR_PAD_LEFT) . str_pad( ++$count, 2, 0, STR_PAD_LEFT);
+        }else{
+            //$count = Db::table('ew_student')->where('campusid',$data)->where('student_gradeid', $_POST['student_gradeid'])->where('student_classid', $_POST['student_classid'])->count();
+            $count = Db::table('ew_student')->where('campusid',$data)->where('student_classid', $_POST['student_classid'])->count();
+            //$res = date('Y') . str_pad($_POST['student_gradeid'], 2, 0, STR_PAD_LEFT) . str_pad($_POST['student_classid'], 2, 0, STR_PAD_LEFT) . str_pad( ++$count, 2, 0, STR_PAD_LEFT);
+            $res = date("Y",time()) . str_pad($_POST['student_classid'], 2, 0, STR_PAD_LEFT) . str_pad( ++$count, 2, 0, STR_PAD_LEFT);
             $_POST['student_studentid'] = (int) $res;
 //            $_POST['student_createtime'] = date('Y-m-d H:i:s');
             $_POST['campusid'] = $data;
             $id = $registrationModel->insertGetId($_POST);
-            $b = sprintf("%06d", $id);
-            Db::name("user")->insert(["campusid" => $data, "username" => $b, "password" => $b, "typeid" => 1]);
+            //$b = sprintf("%06d", $id);
+            //Db::name("user")->insert(["campusid" => $data, "username" => $b, "password" => $b, "typeid" => 1]);
             $returnData['status'] = 1;
-            $returnData['msg'] = "<center><b style='color:blue;'>报名成功</b> <br/>账号密码为<b style='color:red;'>{$b}</b></center>";
-            return json_encode($returnData);
-		}else{
-			$returnData['status'] = 0;
-            $returnData['msg'] = "班级学员最多100名";
+            //$returnData['msg'] = "<center><b style='color:blue;'>报名成功</b> <br/>账号密码为<b style='color:red;'>{$b}</b></center>";
+            $returnData['msg'] = "<center><b style='color:blue;'>报名成功</b></center>";
             return json_encode($returnData);
 		}
     }
@@ -174,25 +173,46 @@ class StudentController extends CommonController {
      */
     public function getStudents() {
         $start = "";
-        if (empty($_POST['student_createtime'])) {
+        if (empty($_POST['student_createtime1'])) {
             $start = 0;
-            unset($_POST['student_createtime']);
+            unset($_POST['student_createtime1']);
         } else {
-            $start = $_POST['student_createtime'];
-            unset($_POST['student_createtime']);
+            $start = $_POST['student_createtime1'];
+            unset($_POST['student_createtime1']);
+        };
+        if (empty($_POST['student_endtime1'])) {
+            $end = '2100-12-31';
+            unset($_POST['student_endtime1']);
+        } else {
+            $end = $_POST['student_endtime1'];
+            unset($_POST['student_endtime1']);
+        };
+        if (empty($_POST['student_createtime2'])) {
+            $start1 = 0;
+            unset($_POST['student_createtime2']);
+        } else {
+            $start1 = $_POST['student_createtime2'];
+            unset($_POST['student_createtime2']);
+        };
+        if (empty($_POST['student_endtime2'])) {
+            $end1 = '2100-12-31';
+            unset($_POST['student_endtime2']);
+        } else {
+            $end1 = $_POST['student_endtime2'];
+            unset($_POST['student_endtime2']);
         };
         $rows = $_POST['rows'];
         $page = $_POST['page'];
         $path = $this->getDataByCampusid($_POST);
         //课程年级班级不能like
-        $searchPath = $this->searchNotLike($path,$_POST,'student_gradeid','student_classid','student_courseid');
+        $searchPath = $this->searchNotLike($path,$_POST,'student_classid','student_courseid');
         //end
         if (isset($searchPath['campusid'])) {
             $searchPath['student.campusid'] = $searchPath["campusid"];
             unset($searchPath["campusid"]);
         }
-        $students = Student::with("grade,course,classes")->where($searchPath)->where('student_createtime', '>', $start)->order("student.id desc")->limit($rows * ($page - 1), $rows)->select();
-        $total = Student::with("grade,course,classes")->where($searchPath)->where('student_createtime', '>', $start)->count();
+        $students = Student::with("course,classes")->where($searchPath)->where('student_createtime', 'between', "{$start},{$end}")->where('student_endtime', 'between', "{$start1},{$end1}")->order("student.id desc")->limit($rows * ($page - 1), $rows)->select();
+        $total = Student::with("course,classes")->where($searchPath)->where('student_createtime', 'between', "{$start},{$end}")->where('student_endtime', 'between', "{$start1},{$end1}")->count();
         $data['total'] = $total;
         $data['rows'] = $students;
         return json($data);
@@ -226,19 +246,17 @@ class StudentController extends CommonController {
             array('student_name', '姓名'),
             array('student_studentid', '学号'),
             array('student_phone', '联系方式'),
-            array('student_idcard', '身份证号'),
             array('student_school', '就读学校'),
-            array('grade_name', '年级'),
             array('student_sex', '性别'),
-            array('course_name', '选择课程'),
-            array('student_cardnum', '支付宝账号'),
-            array('student_createtime', '报名日期'),
+            array('course_name', '课程'),
             array('classes_name','班级'),
+            array('student_salesorderid','协议单号'),
+            array('student_createtime', '报名日期'),
+            array('student_endtime', '到期日期'),
             array('student_status', '状态'),
             array('student_remark', '备注')
         );
         $join = [
-            ['ew_grade grade', 'student.student_gradeid=grade.id'],
             ['ew_course course', 'student.student_courseid=course.id'],
             ['ew_classes classes','student.student_classid=classes.id'],
         ];
@@ -283,34 +301,34 @@ class StudentController extends CommonController {
                     unset($array[$i][$k]);
                 }
                 if($k==2){
-                    $array[$i]['student_idcard'] = $v;
-                    unset($array[$i][$k]);
-                }
-                if($k==3){
                     $array[$i]['student_school'] = $v;
                     unset($array[$i][$k]);
                 }
-                if($k==4){
-                    $array[$i]['student_gradeid'] = $v;
-                    unset($array[$i][$k]);
-                }
-                if($k==5){
+                if($k==3){
                     $array[$i]['student_sex'] = $v;
                     unset($array[$i][$k]);
                 }
-                if($k==6){
+                if($k==4){
                     $array[$i]['student_courseid'] = $v;
                     unset($array[$i][$k]);
                 }
-                if($k==7){
-                    $array[$i]['student_cardnum'] = $v;
-                    unset($array[$i][$k]);
-                }
-                
-                if($k==8){
+                if($k==5){
                     $array[$i]['student_classid'] = $v;
                     unset($array[$i][$k]);
                 }
+                if($k==6){
+                    $array[$i]['student_salesorderid'] = $v;
+                    unset($array[$i][$k]);
+                }
+                if($k==7){
+                    $array[$i]['student_createtime'] = $v;
+                    unset($array[$i][$k]);
+                }
+                if($k==8){
+                    $array[$i]['student_endtime'] = $v;
+                    unset($array[$i][$k]);
+                }
+                
                 if($k==9){
                     $array[$i]['student_status'] = $v;
                     unset($array[$i][$k]);
@@ -320,7 +338,6 @@ class StudentController extends CommonController {
                     unset($array[$i][$k]);
                 }
                 $array[$i]['campusid'] = $campusid;
-                $array[$i]['student_createtime'] = date("Y-m-d",time());
                 $array[$i]['student_studentid'] = "";
             }
            $arr[$i-2]=$array[$i];
@@ -329,13 +346,7 @@ class StudentController extends CommonController {
       
 
         for($i=0;$i<count($arr);$i++){
-                if( null != $a = Db::table("ew_grade")->field("id")->where(["grade_name"=>$arr[$i]["student_gradeid"],"campusid"=>$campusid])->select()){
-                    $arr[$i]["student_gradeid"]=$a[0]['id'];
-                }else{
-                    $id = Db::table("ew_grade")->insertGetId(["campusid"=>$campusid,"grade_name"=>$arr[$i]["student_gradeid"]]);
-                    $arr[$i]["student_gradeid"]=$id;
-                }
-          
+
                 if(null != $a = Db::table("ew_course")->field("id")->where(["course_name"=>$arr[$i]["student_courseid"],"campusid"=>$campusid])->select()){
                     $arr[$i]["student_courseid"]=$a[0]['id'];
                 }else{
@@ -363,13 +374,11 @@ class StudentController extends CommonController {
         }
 
         for($k=0;$k<count($arr);$k++){
-            $count = Db::table('ew_student')->where('student_gradeid', $arr[$k]['student_gradeid'])->where('student_classid', $arr[$k]['student_classid'])->count();
+            $count = Db::table('ew_student')->where('student_classid', $arr[$k]['student_classid'])->count();
              if($arr[$k]["student_studentid"]==''){
-                    $arr[$k]["student_studentid"]=date('Y') . str_pad($arr[$k]['student_gradeid'], 2, 0, STR_PAD_LEFT) . str_pad($arr[$k]['student_classid'], 2, 0, STR_PAD_LEFT) . str_pad( ++$count, 2, 0, STR_PAD_LEFT);;
+                    $arr[$k]["student_studentid"]=date("Y",time())  . str_pad($arr[$k]['student_classid'], 2, 0, STR_PAD_LEFT) . str_pad( ++$count, 2, 0, STR_PAD_LEFT);;
                 }
             $id = M("student")->insertGetId($arr[$k]);
-            $b = sprintf("%06d", $id);
-            M("user")->insert(["campusid" => $campusid, "username" => $b, "password" => $b, "typeid" => 1]);
         }
       
        
